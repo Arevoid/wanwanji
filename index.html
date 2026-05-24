@@ -67,6 +67,37 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* Category tabs: grid 约束宽度，内层 flex 横向滚动，隐藏滚动条 */
+        .category-tabs-shell {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        #categoryTabs {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            gap: 0.25rem;
+            min-width: 0;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        #categoryTabs::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        #categoryTabs > button {
+            flex-shrink: 0;
+        }
         /* Glow Effect Backgrounds */
         .glow-orb {
             position: absolute;
@@ -184,7 +215,7 @@
     </div>
 
     <!-- Main Content Area -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20 relative z-10 flex flex-col lg:flex-row gap-6">
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0 overflow-x-clip pb-20 relative z-10 flex flex-col lg:flex-row gap-6">
         
         <!-- Left Sidebar: Dashboard Info -->
         <aside class="w-full lg:w-60 shrink-0 space-y-4">
@@ -219,7 +250,7 @@
         </aside>
 
         <!-- Right Content Block: Category Tab List + Sorting + Grid -->
-        <section class="flex-grow space-y-4">
+        <section class="flex-1 min-w-0 w-full max-w-full overflow-x-clip space-y-4">
             
             <!-- ADMIN COMMAND DASHBOARD (🔑 Fixes button overflow beautifully by giving admins a spacious layout!) -->
             <div id="adminCommandDashboard" class="hidden bg-gradient-to-r from-indigo-950/30 via-purple-950/20 to-gray-950/40 border border-indigo-500/20 rounded-2xl p-5 backdrop-blur-sm fade-in">
@@ -281,8 +312,8 @@
             </div>
 
             <!-- Category Tabs Container -->
-            <div class="bg-darkCard/20 p-1.5 rounded-2xl border border-gray-900/60 flex items-center overflow-x-auto scrollbar-none justify-between gap-2">
-                <div id="categoryTabs" class="flex items-center gap-1 overflow-x-auto scrollbar-none">
+            <div class="category-tabs-shell bg-darkCard/20 p-1.5 rounded-2xl border border-gray-900/60">
+                <div id="categoryTabs" class="scrollbar-none">
                     <!-- JS Dynamically injects Premium Tabs here -->
                 </div>
             </div>
@@ -920,6 +951,15 @@
             updateAdminUi(true); // Suppress welcome toast if session persists
             renderAll();
             lucide.createIcons();
+
+            const categoryTabsEl = document.getElementById('categoryTabs');
+            if (categoryTabsEl) {
+                categoryTabsEl.addEventListener('wheel', (e) => {
+                    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+                    e.preventDefault();
+                    categoryTabsEl.scrollLeft += e.deltaY;
+                }, { passive: false });
+            }
 
             // Window Scroll Listener for Back To Top Button
             window.addEventListener('scroll', handleWindowScroll);
