@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="pageTitle">ShareHub - 高颜值的个人资源分享站</title>
+    <title id="pageTitle">ShareHub - 个人资源分享站</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts (Inter & HarmonyOS Sans style) -->
@@ -137,7 +137,6 @@
                     </div>
                     <div>
                         <span id="navSiteName" class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-350">ShareHub</span>
-                        <span class="text-[10px] block text-gray-500 font-medium">静态站专属分享仓</span>
                     </div>
                 </div>
 
@@ -183,7 +182,7 @@
             <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Static Sharing Interface</span>
         </div>
         <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
-            高颜值的 <span id="heroSiteName" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">网盘资源集市</span>
+            <span id="heroSiteName" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">网盘资源集市</span>
         </h1>
         <p id="heroSiteDesc" class="text-xs md:text-sm text-gray-400 max-w-xl mx-auto mb-6 font-light">
             支持分类Tab自主增删改，一键复制提取码与直达下载，支持 Excel 复制内容智能批量导入。
@@ -270,8 +269,8 @@
                     </button>
                 </div>
                 
-                <!-- 5 Admin Actions Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3.5">
+                <!-- Admin Actions Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3.5">
                     <!-- Site Config -->
                     <button onclick="openSiteConfigModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
                         <i data-lucide="settings" class="h-5 w-5 text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
@@ -301,6 +300,12 @@
                         <i data-lucide="sheet" class="h-5 w-5 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
                         <span class="text-xs font-semibold">智能批量导入</span>
                         <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">Excel/飞书表格复制导入</span>
+                    </button>
+                    <!-- Bulk Delete -->
+                    <button onclick="openBulkDeleteModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-red-950/20 border border-gray-900 hover:border-red-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="trash-2" class="h-5 w-5 text-red-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">批量删除</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">勾选多项一键清除</span>
                     </button>
                 </div>
 
@@ -619,6 +624,61 @@
         </div>
     </div>
 
+    <!-- BATCH DELETE MODAL -->
+    <div id="bulkDeleteModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-4xl p-5 shadow-2xl relative fade-in flex flex-col max-h-[90vh]">
+            <button onclick="closeModal('bulkDeleteModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="trash-2" class="text-red-400 h-5 w-5"></i>
+                <span>批量删除资源</span>
+            </h3>
+            <p class="text-[11px] text-gray-500 mb-4">
+                勾选需要删除的分享资源，确认后将永久从本地缓存中清除，此操作不可恢复。
+            </p>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <input type="text" id="bulkDeleteSearch" oninput="filterBulkDeleteList(this.value)" placeholder="搜索资源名称、分类或链接..." class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:border-red-500 focus:outline-none">
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="toggleBulkDeleteAll(true)" class="px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 transition">全选</button>
+                    <button onclick="toggleBulkDeleteAll(false)" class="px-3 py-1.5 text-[11px] font-semibold rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 transition">取消全选</button>
+                </div>
+            </div>
+
+            <div class="flex-grow overflow-auto border border-gray-900 rounded-xl bg-gray-900/40 p-2 text-xs min-h-[240px]">
+                <table class="w-full text-left text-gray-355 border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase text-gray-500 border-b border-gray-900">
+                            <th class="py-1 px-2 text-center w-10">删除</th>
+                            <th class="py-1 px-2 w-8">图</th>
+                            <th class="py-1 px-2">资源名称</th>
+                            <th class="py-1 px-2 w-28">分类</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkDeleteTable">
+                        <tr>
+                            <td colspan="4" class="py-8 text-center text-gray-600 text-xs italic">暂无资源数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pt-4 mt-3 border-t border-gray-900 flex justify-between items-center text-xs">
+                <span class="text-gray-500">已选择 <span id="bulkDeleteSelectedCount" class="text-red-400 font-semibold">0</span> 项</span>
+                <div class="flex space-x-2">
+                    <button onclick="closeModal('bulkDeleteModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-950 hover:bg-gray-800 text-gray-400 transition-all">
+                        取消
+                    </button>
+                    <button onclick="submitBulkDelete()" class="px-5 py-2 font-semibold rounded-xl bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/10 transition-all">
+                        确认删除选中项
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- CATEGORY MANAGER MODAL -->
     <div id="categoryManagerModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-md p-5 shadow-2xl relative fade-in flex flex-col max-h-[85vh]">
@@ -861,6 +921,8 @@
         let currentSort = 'date';
         let isAdmin = false; 
         let parsedBulkItems = [];
+        let bulkDeleteItems = [];
+        let bulkDeleteFilter = '';
 
         // Initialize App
         window.onload = function() {
@@ -967,7 +1029,7 @@
 
         // Apply dynamically loaded Config parameters onto the DOM
         function applySiteConfigToDOM() {
-            document.getElementById('pageTitle').innerText = `${siteConfig.siteName} - 高颜值的个人资源分享站`;
+            document.getElementById('pageTitle').innerText = `${siteConfig.siteName} - 个人资源分享站`;
             document.getElementById('navSiteName').innerText = siteConfig.siteName;
             document.getElementById('navLogoIcon').innerHTML = siteConfig.siteEmoji || '⚡';
             document.getElementById('heroSiteName').innerText = siteConfig.siteName;
@@ -1314,7 +1376,7 @@
                         </div>
 
                         <!-- Info Description -->
-                        <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc || '暂无详细介绍，点击链接直接前往下载或查看详情。'}</p>
+                        <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc || ''}</p>
                         
                         <!-- Consolidated Category & Tags on ONE SINGLE LINE (Category always in front) -->
                         <div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">
@@ -2005,8 +2067,8 @@
                     emoji: emoji,
                     link: link,
                     code: code,
-                    desc: `批量快速识别入库。归类自: ${category}`,
-                    tags: `${category}, 批量导入`,
+                    desc: desc.trim(),
+                    tags: tags.trim(),
                     clicks: 0,
                     date: new Date().toISOString().split('T')[0]
                 });
@@ -2087,6 +2149,125 @@
             saveData();
             closeModal('bulkImportModal');
             showToast(`🚀 成功合并 ${activeImports.length} 个新分享至本地数据库！`);
+        }
+
+        // ==========================================
+        // BULK DELETE LOGIC
+        // ==========================================
+        function openBulkDeleteModal() {
+            if (!isAdmin) return;
+            bulkDeleteFilter = '';
+            const searchInput = document.getElementById('bulkDeleteSearch');
+            if (searchInput) searchInput.value = '';
+            refreshBulkDeleteList();
+            document.getElementById('bulkDeleteModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function refreshBulkDeleteList() {
+            bulkDeleteItems = resources.map((item, index) => ({
+                index,
+                selected: false,
+                title: item.title,
+                category: item.category || '其他',
+                link: item.link || '',
+                emoji: item.emoji || '📦'
+            }));
+            updateBulkDeleteTable();
+        }
+
+        function filterBulkDeleteList(query) {
+            bulkDeleteFilter = query.trim().toLowerCase();
+            updateBulkDeleteTable();
+        }
+
+        function getFilteredBulkDeleteItems() {
+            if (!bulkDeleteFilter) return bulkDeleteItems;
+            return bulkDeleteItems.filter(item => {
+                return item.title.toLowerCase().includes(bulkDeleteFilter) ||
+                    (item.category && item.category.toLowerCase().includes(bulkDeleteFilter)) ||
+                    (item.link && item.link.toLowerCase().includes(bulkDeleteFilter));
+            });
+        }
+
+        function updateBulkDeleteSelectedCount() {
+            const count = bulkDeleteItems.filter(item => item.selected).length;
+            const label = document.getElementById('bulkDeleteSelectedCount');
+            if (label) label.innerText = count;
+        }
+
+        function updateBulkDeleteTable() {
+            const tbody = document.getElementById('bulkDeleteTable');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const visibleItems = getFilteredBulkDeleteItems();
+            if (visibleItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-gray-600 text-xs italic">
+                            ${bulkDeleteFilter ? '没有匹配的分享资源' : '暂无资源数据'}
+                        </td>
+                    </tr>
+                `;
+                updateBulkDeleteSelectedCount();
+                return;
+            }
+
+            visibleItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-900 hover:bg-gray-900/20 text-[11px] transition';
+                tr.innerHTML = `
+                    <td class="py-2 px-2 text-center">
+                        <input type="checkbox" ${item.selected ? 'checked' : ''} data-index="${item.index}" onchange="toggleBulkDeleteItem(${item.index}, this.checked)" class="rounded border-gray-800 text-red-500 focus:ring-red-500 bg-gray-950">
+                    </td>
+                    <td class="py-2 px-2 text-center text-base">${item.emoji}</td>
+                    <td class="py-2 px-2">
+                        <div class="font-semibold text-gray-200 truncate max-w-[260px]" title="${item.title}">${item.title}</div>
+                        <div class="text-[9px] text-gray-500 truncate max-w-[260px] font-mono" title="${item.link}">${item.link || '无链接'}</div>
+                    </td>
+                    <td class="py-2 px-2 text-gray-400">${item.category}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            updateBulkDeleteSelectedCount();
+        }
+
+        function toggleBulkDeleteItem(resourceIndex, checked) {
+            const target = bulkDeleteItems.find(item => item.index === resourceIndex);
+            if (target) target.selected = checked;
+            updateBulkDeleteSelectedCount();
+        }
+
+        function toggleBulkDeleteAll(selectAll) {
+            const visibleIndices = new Set(getFilteredBulkDeleteItems().map(item => item.index));
+            bulkDeleteItems.forEach(item => {
+                if (visibleIndices.has(item.index)) {
+                    item.selected = selectAll;
+                }
+            });
+            updateBulkDeleteTable();
+        }
+
+        function submitBulkDelete() {
+            if (!isAdmin) return;
+            const indices = bulkDeleteItems.filter(item => item.selected).map(item => item.index);
+            if (indices.length === 0) {
+                showToast('未选择任何资源', 'error');
+                return;
+            }
+
+            customConfirm(
+                '确认批量删除？',
+                `即将永久删除 ${indices.length} 个资源，此操作不可恢复。`,
+                () => {
+                    indices.sort((a, b) => b - a).forEach(i => resources.splice(i, 1));
+                    saveData();
+                    closeModal('bulkDeleteModal');
+                    showToast(`🗑️ 已成功删除 ${indices.length} 个资源`, 'warning');
+                }
+            );
         }
 
         // Save Data and close tools
