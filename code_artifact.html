@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">ShareHub - 高颜值的个人资源分享站</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter & HarmonyOS Sans style) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Microsoft YaHei', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        darkBg: '#05070f',
+                        darkCard: '#0f1322',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+            background-color: #05070f;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #05070f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        /* Hidden scrollbar utilities */
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Glow Effect Backgrounds */
+        .glow-orb {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col antialiased">
+
+    <!-- Decorative Glow Orbs -->
+    <div class="glow-orb bg-indigo-600 top-[-100px] left-[-100px]"></div>
+    <div class="glow-orb bg-purple-600 bottom-[-100px] right-[-100px]"></div>
+    <div class="glow-orb bg-blue-600 top-[35%] left-[50%] translate-x-[-50%]"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-40 bg-darkBg/80 backdrop-blur-md border-b border-gray-900 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                    <div id="navLogoIcon" class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-lg">
+                        <!-- Dynamic Logo Emoji -->
+                    </div>
+                    <div>
+                        <span id="navSiteName" class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-350">ShareHub</span>
+                        <span class="text-[10px] block text-gray-500 font-medium">静态站专属分享仓</span>
+                    </div>
+                </div>
+
+                <!-- Admin Controls Container (Strictly HIDDEN for normal visitors) -->
+                <div id="adminNavbarContainer" class="hidden items-center space-x-2.5 sm:space-x-4">
+                    <!-- Admin Logout Trigger -->
+                    <button onclick="handleAdminLogoutAction()" id="adminBtn" class="flex items-center space-x-2 px-3 py-1.5 rounded-xl border border-green-500/50 bg-green-500/5 text-xs font-medium text-green-200 hover:bg-green-500/15 transition-all">
+                        <i data-lucide="shield" class="h-3.5 w-3.5 text-green-400"></i>
+                        <span>管理中 (点击退出)</span>
+                    </button>
+                    
+                    <!-- Export / Import Options Dropdown -->
+                    <div class="relative inline-block text-left">
+                        <button onclick="toggleDropdown('configDropdown')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-855 text-xs font-medium text-gray-300 transition-all border border-gray-800">
+                            <i data-lucide="database" class="h-3.5 w-3.5"></i>
+                            <span class="hidden sm:inline">备份管理</span>
+                        </button>
+                        <div id="configDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-gray-955 border border-gray-900 shadow-2xl z-50 py-1">
+                            <button onclick="openExportModal()" class="w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-gray-900 flex items-center space-x-2">
+                                <i data-lucide="download" class="h-4 w-4 text-emerald-400"></i>
+                                <span>导出 JSON 配置</span>
+                            </button>
+                            <button onclick="openImportModal()" class="w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-gray-900 flex items-center space-x-2">
+                                <i data-lucide="upload" class="h-4 w-4 text-indigo-400"></i>
+                                <span>导入 JSON 配置</span>
+                            </button>
+                            <div class="border-t border-gray-900 my-1"></div>
+                            <button onclick="triggerDefaultReset()" class="w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-950/20 flex items-center space-x-2">
+                                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                                <span>恢复出厂默认</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative py-10 md:py-14 text-center max-w-4xl mx-auto px-4 z-10">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Static Sharing Interface</span>
+        </div>
+        <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
+            高颜值的 <span id="heroSiteName" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">网盘资源集市</span>
+        </h1>
+        <p id="heroSiteDesc" class="text-xs md:text-sm text-gray-400 max-w-xl mx-auto mb-6 font-light">
+            支持分类Tab自主增删改，一键复制提取码与直达下载，支持 Excel 复制内容智能批量导入。
+        </p>
+
+        <!-- Search Bar -->
+        <div class="max-w-xl mx-auto relative mb-5">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <i data-lucide="search" class="text-gray-505 h-5 w-5"></i>
+            </div>
+            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="搜索资源名称、标签、分类、链接或简介..." class="block w-full pl-11 pr-24 py-3 bg-gray-950/80 border border-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl text-xs sm:text-sm placeholder-gray-600 transition-all outline-none text-white shadow-xl backdrop-blur-sm">
+            <div class="absolute inset-y-1.5 right-1.5 flex items-center">
+                <span id="searchCount" class="text-[10px] bg-gray-900 text-gray-400 px-2 py-1.5 rounded-lg border border-gray-800 font-medium">0 项结果</span>
+            </div>
+        </div>
+
+        <!-- Hot Tags Area -->
+        <div class="flex flex-wrap items-center justify-center gap-1.5 text-xs text-gray-500">
+            <span class="flex items-center gap-1"><i data-lucide="tag" class="h-3 w-3"></i> 推荐标签:</span>
+            <div id="hotTagsContainer" class="flex flex-wrap gap-1">
+                <!-- JS Inject Hot Tags -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Announcements Area -->
+    <div id="announcementContainer" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-6 relative z-10 flex flex-col gap-2.5">
+        <!-- Announcements dynamically rendered here -->
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20 relative z-10 flex flex-col lg:flex-row gap-6">
+        
+        <!-- Left Sidebar: Dashboard Info -->
+        <aside class="w-full lg:w-60 shrink-0 space-y-4">
+            <!-- Global Stats Card -->
+            <div class="bg-darkCard/30 border border-gray-900 rounded-2xl p-4 backdrop-blur-sm relative overflow-hidden group">
+                <div class="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <i data-lucide="pie-chart" class="h-16 w-16 text-indigo-500"></i>
+                </div>
+                <h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-3 flex items-center justify-between">
+                    <span>数据看板</span>
+                    <i data-lucide="activity" class="h-3.5 w-3.5 text-indigo-400"></i>
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-950/50 border border-gray-900 p-2.5 rounded-xl">
+                        <span class="text-xl font-bold text-indigo-400 block" id="statTotal">0</span>
+                        <span class="text-[9px] text-gray-500">总分享项目</span>
+                    </div>
+                    <div class="bg-gray-950/50 border border-gray-900 p-2.5 rounded-xl">
+                        <span class="text-xl font-bold text-purple-400 block" id="statCategories">0</span>
+                        <span class="text-[9px] text-gray-500">资源分类</span>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-900 flex items-center justify-between text-[10px] text-gray-500">
+                    <span>数据存储: 浏览器本地缓存</span>
+                </div>
+            </div>
+
+            <!-- Quick Tips Card -->
+            <div id="quickTipsCard" class="bg-darkCard/30 border border-gray-900 rounded-2xl p-4 text-xs text-gray-500 space-y-2">
+                <!-- JS Dynamically populates standard guide or admin deployment instructions -->
+            </div>
+        </aside>
+
+        <!-- Right Content Block: Category Tab List + Sorting + Grid -->
+        <section class="flex-grow space-y-4">
+            
+            <!-- Category Tabs Container -->
+            <div class="bg-darkCard/20 p-1.5 rounded-2xl border border-gray-900/60 flex items-center overflow-x-auto scrollbar-none justify-between gap-2">
+                <div id="categoryTabs" class="flex items-center gap-1 overflow-x-auto scrollbar-none">
+                    <!-- JS Dynamically injects Premium Tabs here -->
+                </div>
+                
+                <!-- Manage Categories Trigger (Strictly HIDDEN for normal visitors) -->
+                <div id="categoryAdminTriggerContainer" class="hidden shrink-0 pl-2 border-l border-gray-900">
+                    <button onclick="openCategoryManagerModal()" class="flex items-center space-x-1 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-600 text-indigo-400 rounded-xl text-xs font-bold transition-all border border-indigo-500/20">
+                        <i data-lucide="folder-cog" class="h-3.5 w-3.5"></i>
+                        <span class="hidden sm:inline">管理分类</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controls Bar: Action and Sorter -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-darkCard/30 p-2.5 rounded-2xl border border-gray-900/60">
+                <div class="flex items-center space-x-1 bg-gray-950 p-1 rounded-xl border border-gray-900">
+                    <button onclick="setSort('date')" id="sortDateBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white transition-all">
+                        最新发布
+                    </button>
+                    <!-- Click Sort Option Added -->
+                    <button onclick="setSort('clicks')" id="sortClicksBtn" class="px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white rounded-lg transition-all">
+                        热门点击
+                    </button>
+                </div>
+
+                <!-- Admin Action buttons wrapper (Strictly HIDDEN for normal visitors) -->
+                <div id="adminActionsBar" class="hidden items-center gap-2">
+                    <!-- Site Settings Action -->
+                    <button onclick="openSiteConfigModal()" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-indigo-500/50 text-indigo-400 rounded-xl text-xs font-bold transition-all">
+                        <i data-lucide="settings" class="h-4 w-4 inline mr-1"></i> 网站设置
+                    </button>
+
+                    <!-- Add Announcement Action -->
+                    <button onclick="openAnnouncementModal(-1)" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-purple-500/50 text-purple-400 rounded-xl text-xs font-bold transition-all">
+                        <i data-lucide="megaphone" class="h-4 w-4 inline mr-1"></i> 发布公告
+                    </button>
+
+                    <!-- Manage Tags Action -->
+                    <button onclick="openTagManagerModal()" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-amber-500/50 text-amber-400 rounded-xl text-xs font-bold transition-all">
+                        <i data-lucide="tags" class="h-4 w-4 inline mr-1"></i> 标签管理
+                    </button>
+
+                    <!-- Bulk Import Action -->
+                    <button onclick="openBulkImportModal()" class="px-3.5 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-350 hover:text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+                        <i data-lucide="sheet" class="h-4 w-4 text-emerald-400"></i>
+                        <span>智能批量导入</span>
+                    </button>
+                    
+                    <!-- Single Add Resource Button -->
+                    <button onclick="openAddModal()" id="addResourceBtn" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/10 transition-all">
+                        <i data-lucide="plus-circle" class="h-4 w-4"></i>
+                        <span>单项添加</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Resource Grid / Container -->
+            <div id="resourceGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- JS Injects Resources Cards -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-20 bg-darkCard/10 rounded-2xl border border-dashed border-gray-900 text-center">
+                <div class="p-3 bg-gray-900/40 rounded-full mb-3 text-gray-600">
+                    <i data-lucide="folder-search" class="h-7 w-7"></i>
+                </div>
+                <h4 class="text-xs font-bold text-gray-400">没有匹配的分享</h4>
+                <p class="text-[11px] text-gray-500 mt-1 max-w-xs">换个检索词，或重新输入分类标签检索！</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BACK TO TOP FLOATING BUTTON -->
+    <button id="backToTopBtn" onclick="scrollToTop()" class="hidden fixed bottom-6 right-6 z-50 p-3.5 rounded-xl bg-indigo-650 hover:bg-indigo-700 text-white shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 border border-indigo-400/20 group" title="回到顶部">
+        <i data-lucide="arrow-up" class="h-5 w-5 group-hover:-translate-y-0.5 transition-transform"></i>
+    </button>
+
+    <!-- SITE CONFIGURATION MODAL -->
+    <div id="siteConfigModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-md p-6 shadow-2xl relative fade-in">
+            <!-- Close Btn -->
+            <button onclick="closeModal('siteConfigModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="settings" class="text-indigo-400 h-5 w-5"></i>
+                <span>网站全局 CI 配置</span>
+            </h3>
+            <form onsubmit="handleSiteConfigSubmit(event)" class="space-y-4 text-xs text-gray-300">
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">网站名称 (Site Name) *</label>
+                    <input type="text" id="cfgSiteName" required placeholder="如：ShareHub" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">后台管理密码 *</label>
+                        <input type="text" id="cfgPasscode" required placeholder="如：admin888" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">标志图标 Emoji</label>
+                        <input type="text" id="cfgSiteEmoji" required placeholder="⚡" class="w-full bg-gray-900 border border-gray-805 rounded-xl px-3.5 py-2 text-center text-white text-base focus:border-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">主宣传简介 / 描述 *</label>
+                    <textarea id="cfgSiteDesc" required rows="3" placeholder="写一句简短但吸引眼球的站点概括..." class="w-full bg-gray-900 border border-gray-808 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2.5 pt-2">
+                    <button type="button" onclick="closeModal('siteConfigModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 transition-all">
+                        取消
+                    </button>
+                    <button type="submit" class="px-5 py-2 font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/10 transition-all">
+                        同步更新
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ANNOUNCEMENT MODAL -->
+    <div id="announcementModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative fade-in">
+            <!-- Close Btn -->
+            <button onclick="closeModal('announcementModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="megaphone" class="text-purple-400 h-5 w-5"></i>
+                <span id="annModalTitle">发布新通知公告</span>
+            </h3>
+            <form id="announcementForm" onsubmit="handleAnnouncementSubmit(event)" class="space-y-4 text-xs text-gray-300">
+                <input type="hidden" id="annEditIndex" value="-1">
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">通知等级/配色风格 *</label>
+                    <select id="annType" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                        <option value="info">🔵 蓝色普通公告 (Information)</option>
+                        <option value="warning">🟡 黄色警告提示 (Warning)</option>
+                        <option value="success">🟢 绿色成功通知 (Success)</option>
+                        <option value="danger">🔴 红色紧急声明 (Emergency)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">公告正文内容 *</label>
+                    <textarea id="annContent" required rows="4" placeholder="支持纯文本和常见符号。请在这里写下你想对全体访客广而告之的消息..." class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2.5 pt-2">
+                    <button type="button" onclick="closeModal('announcementModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-900 hover:bg-gray-850 text-gray-400 transition-all">
+                        取消
+                    </button>
+                    <button type="submit" class="px-5 py-2 font-semibold rounded-xl bg-purple-500 hover:bg-purple-650 text-white shadow-lg shadow-purple-500/10 transition-all">
+                        发布上架
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RECOMMEND TAGS MANAGER MODAL -->
+    <div id="tagManagerModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-md p-5 shadow-2xl relative fade-in flex flex-col max-h-[85vh]">
+            <!-- Close Btn -->
+            <button onclick="closeModal('tagManagerModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="tags" class="text-amber-400 h-5 w-5"></i>
+                <span>推荐标签控制台</span>
+            </h3>
+            <p class="text-[11px] text-gray-500 mb-4">
+                在这里动态设置出现在首页下方的快捷推荐标签。用户点击标签将直接过滤含有对应标签的资源。
+            </p>
+
+            <!-- Tags List -->
+            <div class="flex-grow overflow-y-auto border border-gray-900 rounded-xl bg-gray-900/30 p-3 space-y-2 mb-4">
+                <div id="tagManagerList" class="space-y-2.5">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Add Tag inline form -->
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-850 space-y-2 text-xs">
+                <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">新增快捷推荐标签</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="newTagInput" placeholder="请输入新标签名（不含 #，如: 精选）" class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
+                    <button onclick="addNewTag()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-650 text-white font-semibold rounded-xl transition-all shrink-0">
+                        添加
+                    </button>
+                </div>
+            </div>
+
+            <!-- Close Action -->
+            <div class="pt-4 mt-3 border-t border-gray-900 flex justify-end space-x-2 text-xs">
+                <button onclick="closeModal('tagManagerModal')" class="px-5 py-2 font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/10 transition-all">
+                    完成并关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD / EDIT RESOURCE MODAL -->
+    <div id="resourceModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
+            <!-- Close Btn -->
+            <button onclick="closeModal('resourceModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                <i data-lucide="folder-plus" class="text-indigo-400 h-5 w-5"></i>
+                <span id="modalTitle">发布新分享资源</span>
+            </h3>
+
+            <form id="resourceForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-xs text-gray-300">
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <!-- Title -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">资源名称 *</label>
+                    <input type="text" id="resTitle" required placeholder="如：Figma 高保真网页UI设计包" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
+                </div>
+
+                <!-- Category & Emoji Picker Row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">类别分类 *</label>
+                        <select id="resCategory" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                            <!-- Injected dynamically from custom categories -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">图标/表情 (Emoji) *</label>
+                        <input type="text" id="resEmoji" required placeholder="💡 / 🛠️ / 📦 / 📘" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white text-center placeholder-gray-655 focus:border-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Drive Link & Extraction Code -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">下载链接 / 网盘地址 / 获取说明 *</label>
+                        <input type="text" id="resLink" required placeholder="https://pan.quark.cn/... 或群内获取" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">提取码/密码</label>
+                        <input type="text" id="resCode" placeholder="无则留空" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-605 focus:border-indigo-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">资源简介与操作说明</label>
+                    <textarea id="resDesc" rows="2" placeholder="简要说明此资源的功能、密码或者社群获取路径..." class="w-full bg-gray-900 border border-gray-850 rounded-xl px-3 py-2 text-white placeholder-gray-655 focus:border-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">标签Tags (用英文逗号分隔)</label>
+                    <input type="text" id="resTags" placeholder="多个用逗号隔开，如: 剪辑, 教程, 经典" class="w-full bg-gray-900 border border-gray-850 rounded-xl px-3 py-2 text-white placeholder-gray-655 focus:border-indigo-500 focus:outline-none">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-2 flex justify-end space-x-2.5">
+                    <button type="button" onclick="closeModal('resourceModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-900 hover:bg-gray-805 text-gray-400 transition-all">
+                        取消
+                    </button>
+                    <button type="submit" class="px-5 py-2 font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-650 text-white shadow-lg shadow-indigo-500/10 transition-all">
+                        保存数据
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BATCH / BULK IMPORT MODAL -->
+    <div id="bulkImportModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-4xl p-5 shadow-2xl relative fade-in flex flex-col max-h-[90vh]">
+            <!-- Close Btn -->
+            <button onclick="closeModal('bulkImportModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="sheet" class="text-emerald-400 h-5 w-5"></i>
+                <span>智能批量数据识别导入 (支持表格复制)</span>
+            </h3>
+            <p class="text-[11px] text-gray-500 mb-4">
+                你可以直接从<b>Excel、WPS、网页表格、Feishu文档</b>中，拖动鼠标框选数据整行（包含名称、链接、分类等列）复制，然后直接粘贴到下方文本框中。系统将智能分割列，自动归类并实时在下方渲染预览！
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-grow overflow-hidden">
+                <!-- Left Input Area -->
+                <div class="lg:col-span-5 flex flex-col space-y-2">
+                    <label class="block text-[10px] text-gray-400 font-semibold uppercase tracking-wider">在下方粘贴表格或纯文本内容：</label>
+                    <textarea id="bulkInputArea" oninput="liveParseInput(this.value)" placeholder="直接 Ctrl+V 粘贴复制的表格内容。
+例如：
+万万集资源论坛	https://bbs.wanwanji.top/	网站
+生财有术第九期	https://qiiolnxwxyz.feishu.cn/...	付费资源" class="w-full flex-grow bg-gray-900 text-emerald-400 font-mono text-xs p-3 rounded-xl border border-gray-800 focus:border-emerald-500/50 focus:outline-none resize-none min-h-[180px] lg:min-h-0"></textarea>
+                </div>
+
+                <!-- Right Live Preview Area -->
+                <div class="lg:col-span-7 flex flex-col space-y-2 overflow-hidden">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[10px] text-gray-400 font-semibold uppercase tracking-wider">实时智能解析预览 (<span id="parsedCount" class="text-emerald-400">0</span> 项已识别)：</label>
+                        <button onclick="clearBulkInput()" class="text-[10px] text-red-400 hover:underline">清空数据</button>
+                    </div>
+                    
+                    <div class="flex-grow overflow-auto border border-gray-900 rounded-xl bg-gray-900/40 p-2 text-xs">
+                        <table class="w-full text-left text-gray-355 border-collapse">
+                            <thead>
+                                <tr class="text-[10px] uppercase text-gray-500 border-b border-gray-900">
+                                    <th class="py-1 px-2 text-center w-10">导入</th>
+                                    <th class="py-1 px-2 w-8">图</th>
+                                    <th class="py-1 px-2">资源名称</th>
+                                    <th class="py-1 px-2 w-28">分类归属</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulkPreviewTable">
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center text-gray-600 text-xs italic">
+                                        暂无数据输入，支持多列及带Tab的剪贴板数据
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div class="pt-4 mt-3 border-t border-gray-900 flex justify-between items-center text-xs">
+                <span class="text-gray-500">提示：批量导入的数据将与本地现有资源进行合并。</span>
+                <div class="flex space-x-2">
+                    <button onclick="closeModal('bulkImportModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-950 hover:bg-gray-800 text-gray-400 transition-all">
+                        取消
+                    </button>
+                    <button onclick="submitBulkImport()" class="px-5 py-2 font-semibold rounded-xl bg-emerald-500 hover:bg-emerald-650 text-white shadow-lg shadow-emerald-500/10 transition-all">
+                        确认一键导入
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORY MANAGER MODAL -->
+    <div id="categoryManagerModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-md p-5 shadow-2xl relative fade-in flex flex-col max-h-[85vh]">
+            <!-- Close Btn -->
+            <button onclick="closeModal('categoryManagerModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="folder-cog" class="text-indigo-400 h-5 w-5"></i>
+                <span>分类管理中心</span>
+            </h3>
+            <p class="text-[11px] text-gray-500 mb-4">
+                你可以自由修改分类名称或删除不需要的分类。如果某个分类被删除，归属于它的资源将自动分配到“其他”分类下，防止无主。
+            </p>
+
+            <!-- Categories List Area -->
+            <div class="flex-grow overflow-y-auto border border-gray-900 rounded-xl bg-gray-900/30 p-3 space-y-2 mb-4">
+                <div id="categoryManagerList" class="space-y-2.5">
+                    <!-- Dynamic Rows populated by JS -->
+                </div>
+            </div>
+
+            <!-- Add Category Inline Form -->
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-855 space-y-2 text-xs">
+                <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">创建新分类</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="newCategoryInput" placeholder="请输入分类名称（如：精选合集）" class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
+                    <button onclick="addNewCategory()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-650 text-white font-semibold rounded-xl transition-all">
+                        创建
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bottom Actions -->
+            <div class="pt-4 mt-3 border-t border-gray-900 flex justify-end space-x-2 text-xs">
+                <button onclick="closeModal('categoryManagerModal')" class="px-5 py-2 font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-600 text-white shadow-lg shadow-indigo-500/10 transition-all">
+                    完成并保存分类
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div id="exportModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
+            <!-- Close Btn -->
+            <button onclick="closeModal('exportModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="download" class="text-emerald-400 h-5 w-5"></i>
+                <span>导出静态配置文件</span>
+            </h3>
+            <p class="text-xs text-gray-400 mb-4">
+                复制下方的 JSON 配置，如果您正在部署一个静态网页，只需将本 HTML 源码底部的 **INITIAL_CONFIG**、**INITIAL_CATEGORIES**、**INITIAL_HOT_TAGS**、**INITIAL_ANNOUNCEMENTS**、**INITIAL_RESOURCES** 等项变量完全替换为导出的内容即可！
+            </p>
+            
+            <div class="space-y-3">
+                <textarea id="combinedExportTextarea" readonly class="w-full h-[360px] bg-gray-900 text-emerald-400 font-mono text-[10px] p-2.5 rounded-xl border border-gray-900 focus:outline-none"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-4">
+                <button onclick="closeModal('exportModal')" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gray-900 hover:bg-gray-850 text-gray-300 transition-all">
+                    关闭
+                </button>
+                <button onclick="copyCombinedExportJson()" class="px-5 py-2 text-xs font-semibold rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white transition-all">
+                    一键拷贝整包配置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT MODAL -->
+    <div id="importModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
+            <!-- Close Btn -->
+            <button onclick="closeModal('importModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+            <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="upload" class="text-indigo-400 h-5 w-5"></i>
+                <span>导入静态配置文件</span>
+            </h3>
+            <p class="text-xs text-gray-400 mb-4">
+                将您先前导出的完整 JSON 资源列表或整体导出数据包粘贴在下方文本框中，替换本地配置。
+            </p>
+            <textarea id="importJsonArea" placeholder='粘贴整个 JSON 或代码...' class="w-full h-64 bg-gray-900 text-indigo-400 font-mono text-xs p-3 rounded-xl border border-gray-900 focus:border-indigo-500 focus:outline-none mb-4"></textarea>
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeModal('importModal')" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gray-900 hover:bg-gray-850 text-gray-350 transition-all">
+                    关闭
+                </button>
+                <button onclick="handleImportJson()" class="px-5 py-2 text-xs font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-600 text-white transition-all">
+                    立即解析并覆盖
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM CONFIRMATION MODAL -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-[100] overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative fade-in text-center">
+            <div class="mx-auto w-12 h-12 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center text-red-500 mb-3">
+                <i data-lucide="help-circle" class="h-6 w-6"></i>
+            </div>
+            <h3 id="confirmTitle" class="text-sm font-bold text-white mb-2">确认执行此操作？</h3>
+            <p id="confirmMessage" class="text-xs text-gray-400 mb-5 leading-relaxed">此操作执行后将无法复原，请学长慎重决定。</p>
+            <div class="flex items-center justify-center space-x-3">
+                <button id="confirmCancelBtn" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gray-900 text-gray-400 hover:text-white transition">取消</button>
+                <button id="confirmOkBtn" class="px-5 py-2 text-xs font-semibold rounded-xl bg-red-500 hover:bg-red-650 text-white shadow-lg shadow-red-500/10 transition">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION BOX CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2.5 max-w-sm pointer-events-none"></div>
+
+    <script>
+        // ==========================================
+        // 🔒 默认网站配置 (INITIAL_CONFIG)
+        // ==========================================
+        const INITIAL_CONFIG = {
+            siteName: "ShareHub", 
+            siteDesc: "支持分类Tab自主增删改，一键复制提取码与直达下载，支持 Excel 复制内容智能批量导入。",
+            siteEmoji: "⚡",
+            passcode: "admin888", // [极其重要]：公开部署前，请把此处的默认密码修改为您专属的口令！
+            enableUrlSecretUnlock: true,
+        };
+
+        // 默认初始化分类 (INITIAL_CATEGORIES)
+        const INITIAL_CATEGORIES = ["网站", "付费资源", "副业教程", "剪辑", "学习", "工具", "软件", "影视", "其他"];
+
+        // 默认初始化推荐标签 (INITIAL_HOT_TAGS) - 现已支持自主管理!
+        const INITIAL_HOT_TAGS = ["网站", "副业", "工具", "剪辑", "学习", "教程", "网盘拉新", "经典"];
+
+        // 默认公告列表数据 (INITIAL_ANNOUNCEMENTS)
+        const INITIAL_ANNOUNCEMENTS = [
+            {
+                content: "📢 欢迎光临 ShareHub 个人资源中心！这里的所有内容均支持一键复制，点击卡片的「直达链接」可快速转存下载。祝大家收获满满！",
+                type: "info", // info, warning, success, danger
+                date: "2026-05-24"
+            },
+            {
+                content: "⚡ 温馨提示：如果遇到某些网盘链接失效，可在社群中或者页面下方反馈给站长，站长会在 12 小时内迅速补档！",
+                type: "warning",
+                date: "2026-05-23"
+            }
+        ];
+
+        // 默认初始化资源 (INITIAL_RESOURCES)
+        const INITIAL_RESOURCES = [
+            {
+                title: "万万集资源论坛 (资源与文档不同)",
+                category: "网站",
+                emoji: "🌐",
+                link: "https://bbs.wanwanji.top/",
+                code: "",
+                desc: "知名极客资源论坛，汇聚各类开发资料与技术资讯，推荐常驻探索。",
+                tags: "网站, 社区, 论坛",
+                clicks: 342,
+                date: "2026-05-24"
+            },
+            {
+                title: "🔥 生财有术第九期 (更新至10月)",
+                category: "付费资源",
+                emoji: "💰",
+                link: "https://qiiolnxwxyz.feishu.cn/docx/T3xidn6qno9M",
+                code: "sc88",
+                desc: "知名副业创客圈干货库，覆盖大量新媒体、流量变现与商业化运作实践细节。",
+                tags: "付费资源, 生财, 飞书",
+                clicks: 1205,
+                date: "2026-05-23"
+            },
+            {
+                title: "🔥 网盘拉新项目SOP",
+                category: "副业教程",
+                emoji: "⚡",
+                link: "https://qiiolnxwxyz.feishu.cn/docx/BxLUdCDJno",
+                code: "",
+                desc: "网盘新用户引流与分成变现的官方实操指导规范手册（SOP），极度推荐新手学习。",
+                tags: "副业教程, 网盘拉新, 飞书",
+                clicks: 894,
+                date: "2026-05-22"
+            },
+            {
+                title: "影视飓风 剪辑全能必修课",
+                category: "剪辑",
+                emoji: "🎬",
+                link: "https://pan.quark.cn/s/191e1164db3a",
+                code: "9988",
+                desc: "高质量视音频剪辑、调色、分镜逻辑基础课。快速跨过非线性剪辑技术门槛。",
+                tags: "剪辑, 教程, 影视飓风",
+                clicks: 651,
+                date: "2026-05-20"
+            },
+            {
+                title: "2025注册会计师CPA",
+                category: "学习",
+                emoji: "📘",
+                link: "https://pan.quark.cn/s/62995f44449b",
+                code: "cpa1",
+                desc: "全国注册会计师专业阶段全套讲义视频。包含会计、财管、税法等核心考点整理。",
+                tags: "学习, CPA, 会计考证",
+                clicks: 219,
+                date: "2026-05-19"
+            },
+            {
+                title: "订阅分享 (UC+迅雷) 持续更新 出海工具",
+                category: "工具",
+                emoji: "🛠️",
+                link: "群内获取",
+                code: "",
+                desc: "全套海外提效与云盘同步下载脚本合集，加群或扫描页面二维码查看最新状态。",
+                tags: "工具, 出海, 订阅",
+                clicks: 148,
+                date: "2026-05-18"
+            },
+            {
+                title: "【男人性福课堂】铁牛·延时训练+硬度改善",
+                category: "其他",
+                emoji: "📦",
+                link: "https://pan.quark.cn/s/7317771ae5e3",
+                code: "",
+                desc: "经典健身养生与科学训练课程整合归档。",
+                tags: "其他, 课程, 训练",
+                clicks: 405,
+                date: "2026-05-17"
+            }
+        ];
+
+        // Global States
+        let resources = [];
+        let categories = []; 
+        let hotTags = [];        // Dynamic recommended tags array
+        let announcements = []; 
+        let siteConfig = {};     
+        
+        let activeCategory = '全部';
+        let searchQuery = '';
+        let currentSort = 'date';
+        let isAdmin = false; 
+        let parsedBulkItems = [];
+
+        // Initialize App
+        window.onload = function() {
+            // Load Site Configuration
+            const savedConfig = localStorage.getItem('SHARE_SITE_CONFIG');
+            if (savedConfig) {
+                try {
+                    siteConfig = JSON.parse(savedConfig);
+                } catch(e) {
+                    siteConfig = { ...INITIAL_CONFIG };
+                }
+            } else {
+                siteConfig = { ...INITIAL_CONFIG };
+                localStorage.setItem('SHARE_SITE_CONFIG', JSON.stringify(siteConfig));
+            }
+
+            // Load Recommended tags
+            const savedHotTags = localStorage.getItem('SHARE_HOT_TAGS');
+            if (savedHotTags) {
+                try {
+                    hotTags = JSON.parse(savedHotTags);
+                } catch(e) {
+                    hotTags = [...INITIAL_HOT_TAGS];
+                }
+            } else {
+                hotTags = [...INITIAL_HOT_TAGS];
+                localStorage.setItem('SHARE_HOT_TAGS', JSON.stringify(hotTags));
+            }
+
+            // Load announcements list
+            const savedAnnouncements = localStorage.getItem('SHARE_ANNOUNCEMENTS');
+            if (savedAnnouncements) {
+                try {
+                    announcements = JSON.parse(savedAnnouncements);
+                } catch(e) {
+                    announcements = [ ...INITIAL_ANNOUNCEMENTS ];
+                }
+            } else {
+                announcements = [ ...INITIAL_ANNOUNCEMENTS ];
+                localStorage.setItem('SHARE_ANNOUNCEMENTS', JSON.stringify(announcements));
+            }
+
+            // Load custom categories
+            const savedCategories = localStorage.getItem('SHARE_CATEGORIES');
+            if (savedCategories) {
+                try {
+                    categories = JSON.parse(savedCategories);
+                } catch(e) {
+                    categories = [...INITIAL_CATEGORIES];
+                }
+            } else {
+                categories = [...INITIAL_CATEGORIES];
+                localStorage.setItem('SHARE_CATEGORIES', JSON.stringify(categories));
+            }
+
+            // Load resources
+            const savedData = localStorage.getItem('SHARE_RESOURCES');
+            if (savedData) {
+                try {
+                    resources = JSON.parse(savedData);
+                } catch(e) {
+                    resources = [...INITIAL_RESOURCES];
+                }
+            } else {
+                resources = [...INITIAL_RESOURCES];
+                localStorage.setItem('SHARE_RESOURCES', JSON.stringify(resources));
+            }
+
+            // [Security] Load session login state
+            const sessionAdmin = sessionStorage.getItem('SHARE_ADMIN_ACTIVE');
+            if (sessionAdmin === 'true') {
+                isAdmin = true;
+            }
+
+            // [Security-Feature 2] Check URL parameters for secret passcode unlock
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlKey = urlParams.get('admin');
+            if (siteConfig.enableUrlSecretUnlock && urlKey && urlKey === siteConfig.passcode) {
+                isAdmin = true;
+                sessionStorage.setItem('SHARE_ADMIN_ACTIVE', 'true');
+                
+                // Cleanup query parameters silently from address bar
+                const cleanUri = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({path: cleanUri}, '', cleanUri);
+            }
+
+            applySiteConfigToDOM();
+            updateAdminUi(true); // Suppress welcome toast if session persists
+            renderAll();
+            lucide.createIcons();
+
+            // Window Scroll Listener for Back To Top Button
+            window.addEventListener('scroll', handleWindowScroll);
+        }
+
+        // Apply dynamically loaded Config parameters onto the DOM
+        function applySiteConfigToDOM() {
+            document.getElementById('pageTitle').innerText = `${siteConfig.siteName} - 高颜值的个人资源分享站`;
+            document.getElementById('navSiteName').innerText = siteConfig.siteName;
+            document.getElementById('navLogoIcon').innerHTML = siteConfig.siteEmoji || '⚡';
+            document.getElementById('heroSiteName').innerText = siteConfig.siteName;
+            document.getElementById('heroSiteDesc').innerText = siteConfig.siteDesc;
+        }
+
+        function renderAll() {
+            renderCategoryTabs();
+            renderResources();
+            renderHotTags();
+            renderAnnouncements();
+            updateStats();
+            populateModalCategoryDropdown();
+        }
+
+        // Back To Top Scroll handler
+        function handleWindowScroll() {
+            const topBtn = document.getElementById('backToTopBtn');
+            if (window.scrollY > 300) {
+                topBtn.classList.remove('hidden');
+                topBtn.classList.add('fade-in');
+            } else {
+                topBtn.classList.add('hidden');
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Track clicks on resource items (Direct URL clicks / Copy triggers)
+        function trackClick(idx) {
+            if (resources[idx]) {
+                resources[idx].clicks = (resources[idx].clicks || 0) + 1;
+                localStorage.setItem('SHARE_RESOURCES', JSON.stringify(resources));
+                renderResources(); // Live count re-render
+                updateStats();
+            }
+        }
+
+        // Custom Confirm Dialog (Alternative to confirm())
+        function customConfirm(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            modal.classList.remove('hidden');
+
+            const handleCancel = () => {
+                modal.classList.add('hidden');
+                cleanup();
+            };
+
+            const handleOk = () => {
+                modal.classList.add('hidden');
+                onConfirm();
+                cleanup();
+            };
+
+            const cleanup = () => {
+                document.getElementById('confirmCancelBtn').removeEventListener('click', handleCancel);
+                document.getElementById('confirmOkBtn').removeEventListener('click', handleOk);
+            };
+
+            document.getElementById('confirmCancelBtn').addEventListener('click', handleCancel);
+            document.getElementById('confirmOkBtn').addEventListener('click', handleOk);
+        }
+
+        // Render dynamic alert announcements notifications
+        function renderAnnouncements() {
+            const container = document.getElementById('announcementContainer');
+            container.innerHTML = '';
+
+            if (announcements.length === 0) {
+                container.className = "hidden";
+                return;
+            } else {
+                container.className = "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-6 relative z-10 flex flex-col gap-2.5";
+            }
+
+            announcements.forEach((ann, idx) => {
+                const card = document.createElement('div');
+                
+                // Color strategies
+                let bgBorderClasses = "bg-blue-500/5 border-blue-500/20 text-blue-200";
+                let badgeClasses = "bg-blue-500/10 text-blue-400 border-blue-500/20";
+                let bellColor = "text-blue-400";
+                let labelText = "公告";
+
+                if (ann.type === 'warning') {
+                    bgBorderClasses = "bg-amber-500/5 border-amber-500/20 text-amber-200";
+                    badgeClasses = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    bellColor = "text-amber-400";
+                    labelText = "注意";
+                } else if (ann.type === 'success') {
+                    bgBorderClasses = "bg-emerald-500/5 border-emerald-500/20 text-emerald-200";
+                    badgeClasses = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    bellColor = "text-emerald-400";
+                    labelText = "通知";
+                } else if (ann.type === 'danger') {
+                    bgBorderClasses = "bg-red-500/5 border-red-500/20 text-red-200";
+                    badgeClasses = "bg-red-500/10 text-red-400 border-red-500/20";
+                    bellColor = "text-red-400";
+                    labelText = "紧急";
+                }
+
+                card.className = `${bgBorderClasses} border rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 backdrop-blur-sm transition-all relative fade-in`;
+
+                // Render actions if current session is validated as admin
+                const adminOptionsHtml = isAdmin
+                    ? `
+                        <div class="flex items-center space-x-1 shrink-0">
+                            <button onclick="openAnnouncementModal(${idx})" class="p-1.5 rounded-lg bg-gray-950/80 border border-gray-900 hover:border-indigo-500/30 text-gray-400 hover:text-white transition" title="编辑公告">
+                                <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+                            </button>
+                            <button onclick="deleteAnnouncement(${idx})" class="p-1.5 rounded-lg bg-gray-950/80 border border-gray-900 hover:border-red-500/30 text-gray-400 hover:text-red-400 transition" title="删除公告">
+                                <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                            </button>
+                        </div>
+                    `
+                    : `
+                        <button onclick="dismissAnnouncementCard(this)" class="p-1 rounded-lg text-gray-550 hover:text-gray-350 transition" title="稍后提醒">
+                            <i data-lucide="x" class="h-4 w-4"></i>
+                        </button>
+                    `;
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-3 flex-grow">
+                        <div class="p-2 bg-gray-950/80 rounded-xl border border-gray-900/60 shrink-0 ${bellColor}">
+                            <i data-lucide="bell-ring" class="h-4.5 w-4.5 animate-bounce"></i>
+                        </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="px-2 py-0.5 rounded-md border text-[9px] font-bold tracking-widest ${badgeClasses}">${labelText}</span>
+                                <span class="text-[9px] text-gray-500 font-mono">${ann.date || '刚刚'}</span>
+                            </div>
+                            <p class="text-[11px] sm:text-xs leading-relaxed text-gray-300 font-light pr-4">${ann.content}</p>
+                        </div>
+                    </div>
+                    ${adminOptionsHtml}
+                `;
+
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function dismissAnnouncementCard(btn) {
+            const card = btn.closest('.border');
+            card.classList.add('opacity-0', 'translate-y-[-10px]');
+            setTimeout(() => card.remove(), 300);
+        }
+
+        // Render Dynamic Category Tabs
+        function renderCategoryTabs() {
+            const container = document.getElementById('categoryTabs');
+            container.innerHTML = '';
+
+            // Add the permanent "全部" Tab first
+            const totalCount = resources.length;
+            const isAllActive = activeCategory === '全部';
+            const allBtn = document.createElement('button');
+            allBtn.onclick = () => selectCategory('全部');
+            allBtn.className = `whitespace-nowrap flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 ${
+                isAllActive 
+                ? 'bg-gradient-to-r from-indigo-550 to-purple-650 bg-indigo-550 text-white shadow-md shadow-indigo-500/15' 
+                : 'text-gray-400 hover:text-white hover:bg-gray-900/50'
+            }`;
+            allBtn.innerHTML = `
+                <i data-lucide="compass" class="h-3.5 w-3.5"></i>
+                <span>全部</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded-md ${isAllActive ? 'bg-indigo-650/80 text-white' : 'bg-gray-900 text-gray-500'}">${totalCount}</span>
+            `;
+            container.appendChild(allBtn);
+
+            // Render all custom categories dynamically
+            categories.forEach(cat => {
+                const count = resources.filter(r => r.category === cat).length;
+                if (count === 0 && !isAdmin) return; // Only show non-empty categories unless in admin mode
+
+                const isActive = activeCategory === cat;
+
+                const tabBtn = document.createElement('button');
+                tabBtn.onclick = () => selectCategory(cat);
+                tabBtn.className = `whitespace-nowrap flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 ${
+                    isActive 
+                    ? 'bg-gradient-to-r from-indigo-550 to-purple-650 bg-indigo-550 text-white shadow-md shadow-indigo-500/15' 
+                    : 'text-gray-400 hover:text-white hover:bg-gray-900/50'
+                }`;
+
+                // Map specific category names to standard icons elegantly
+                let tabIcon = "tag";
+                if(cat.includes('网站') || cat.includes('导航') || cat.includes('网')) tabIcon = "globe";
+                else if(cat.includes('付费') || cat.includes('资') || cat.includes('收费')) tabIcon = "coins";
+                else if(cat.includes('副业') || cat.includes('赚') || cat.includes('商业')) tabIcon = "trending-up";
+                else if(cat.includes('剪辑') || cat.includes('视频') || cat.includes('设计')) tabIcon = "film";
+                else if(cat.includes('学') || cat.includes('教程') || cat.includes('考')) tabIcon = "graduation-cap";
+                else if(cat.includes('工') || cat.includes('效') || cat.includes('黑科技')) tabIcon = "wrench";
+                else if(cat.includes('软件') || cat.includes('程序') || cat.includes('app')) tabIcon = "monitor";
+                else if(cat.includes('影') || cat.includes('剧') || cat.includes('片')) tabIcon = "tv";
+
+                tabBtn.innerHTML = `
+                    <i data-lucide="${tabIcon}" class="h-3.5 w-3.5"></i>
+                    <span>${cat}</span>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded-md ${isActive ? 'bg-indigo-650/80 text-white' : 'bg-gray-900 text-gray-500'}">${count}</span>
+                `;
+                container.appendChild(tabBtn);
+            });
+            lucide.createIcons();
+        }
+
+        // Dynamically populate Category dropdown in the single add modal
+        function populateModalCategoryDropdown() {
+            const select = document.getElementById('resCategory');
+            if(!select) return;
+            select.innerHTML = '';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        // Render Resource Card Grid
+        function renderResources() {
+            const grid = document.getElementById('resourceGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            // Filter
+            let filtered = resources;
+            if (activeCategory !== '全部') {
+                filtered = filtered.filter(item => item.category === activeCategory);
+            }
+
+            if (searchQuery.trim() !== '') {
+                const query = searchQuery.toLowerCase().trim();
+                filtered = filtered.filter(item => {
+                    return item.title.toLowerCase().includes(query) ||
+                           (item.category && item.category.toLowerCase().includes(query)) ||
+                           (item.desc && item.desc.toLowerCase().includes(query)) ||
+                           (item.tags && item.tags.toLowerCase().includes(query)) ||
+                           (item.link && item.link.toLowerCase().includes(query));
+                });
+            }
+
+            // Sort (Date vs Clicks)
+            if (currentSort === 'date') {
+                filtered.sort((a, b) => new Date(b.date || '') - new Date(a.date || ''));
+            } else if (currentSort === 'clicks') {
+                filtered.sort((a, b) => (b.clicks || 0) - (a.clicks || 0));
+            }
+
+            document.getElementById('searchCount').innerText = `${filtered.length} 项结果`;
+
+            if (filtered.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            } else {
+                grid.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            // Draw Cards
+            filtered.forEach(item => {
+                // Find index in original data for mutating state (like deletions/clicks)
+                const originalIndex = resources.findIndex(r => r.title === item.title && r.link === item.link);
+
+                const card = document.createElement('div');
+                // FIXED: Changed unrecognized p-4.5 to standard Tailwind p-5 (20px) to unify card inner margins and avoid hugging edges
+                card.className = "bg-darkCard/30 border border-gray-900/80 rounded-2xl p-5 hover:border-gray-800 hover:bg-darkCard/60 transition-all duration-300 relative flex flex-col justify-between group fade-in";
+
+                const tagChips = item.tags 
+                    ? item.tags.split(',').map(t => `<span onclick="setTagSearch('${t.trim()}')" class="cursor-pointer bg-gray-950/80 hover:bg-gray-900 text-gray-500 hover:text-indigo-400 px-2 py-0.5 rounded text-[10px] border border-gray-900 transition">${t.trim()}</span>`).join(' ')
+                    : '';
+
+                const codeHtml = item.code 
+                    ? `
+                        <div class="flex items-center justify-between text-xs bg-gray-950/80 border border-gray-900 px-3 py-1.5 rounded-xl">
+                            <span class="text-gray-500 font-medium">提取码: <b class="text-indigo-400 font-mono tracking-wider ml-1">${item.code}</b></span>
+                            <button onclick="trackClick(${originalIndex}); copyToClipboard('${item.code}', '提取码已拷贝：${item.code}')" class="text-indigo-400 hover:text-indigo-300 flex items-center space-x-1 font-semibold text-[10px] transition">
+                                <i data-lucide="copy" class="h-3 w-3"></i>
+                                <span>复制</span>
+                            </button>
+                        </div>
+                    ` 
+                    : `
+                        <div class="flex items-center text-xs bg-gray-950/30 text-gray-655 px-3 py-1.5 rounded-xl italic">
+                            <i data-lucide="unlock" class="h-3 w-3 mr-1.5 opacity-60"></i> 无需提取密码
+                        </div>
+                    `;
+
+                // Admin actions (Edit/Delete)
+                const adminActions = isAdmin 
+                    ? `
+                        <div class="absolute top-4 right-4 flex space-x-1.5 z-20">
+                            <button onclick="editResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-indigo-600 border border-gray-800 hover:border-indigo-500 text-gray-350 hover:text-white shadow-lg transition-all" title="编辑资源">
+                                <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+                            </button>
+                            <button onclick="triggerDeleteResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-red-650 border border-gray-800 hover:border-red-500 text-gray-350 hover:text-white shadow-lg transition-all" title="删除资源">
+                                <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                            </button>
+                        </div>
+                    ` 
+                    : '';
+
+                const isDirectLink = item.link && item.link.startsWith('http');
+                const linkActionHtml = isDirectLink
+                    ? `<a href="${item.link}" target="_blank" onclick="trackClick(${originalIndex})" rel="noopener noreferrer" class="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 bg-indigo-500/10 hover:bg-indigo-550 text-indigo-400 hover:text-white rounded-xl text-xs font-semibold transition border border-indigo-500/15">
+                        <i data-lucide="external-link" class="h-3.5 w-3.5"></i>
+                        <span>直达链接</span>
+                       </a>`
+                    : `<button onclick="showToast('请复制说明获取或扫描群内二维码','warning')" class="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 bg-gray-900 text-gray-500 rounded-xl text-xs font-semibold cursor-not-allowed border border-gray-850">
+                        <i data-lucide="users" class="h-3.5 w-3.5"></i>
+                        <span>社群获取</span>
+                       </button>`;
+
+                const viewClicks = item.clicks || 0;
+
+                card.innerHTML = `
+                    ${adminActions}
+                    <div class="w-full">
+                        <!-- Top Header Row: Logo + Title + Clicks (Align inline) -->
+                        <div class="flex items-start justify-between mb-3 w-full">
+                            <div class="flex items-start space-x-2.5 overflow-hidden flex-grow mr-2">
+                                <div class="h-9 w-9 shrink-0 rounded-xl bg-gray-950 border border-gray-900 flex items-center justify-center text-lg">
+                                    ${item.emoji || '📦'}
+                                </div>
+                                <div class="overflow-hidden flex-grow">
+                                    <h3 class="font-bold text-gray-100 text-xs sm:text-sm group-hover:text-white transition-colors truncate mt-1.5">${item.title}</h3>
+                                </div>
+                            </div>
+                            <!-- Right aligned clicks count with Admin absolute-btn avoidance padding -->
+                            <div class="shrink-0 flex items-center space-x-0.5 text-[10px] text-gray-500 font-light mt-2.5 ${isAdmin ? 'pr-20' : ''}" title="累计浏览点击量">
+                                <i data-lucide="eye" class="h-3 w-3"></i> 
+                                <span>${viewClicks}</span>
+                            </div>
+                        </div>
+
+                        <!-- Info Description -->
+                        <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc || '暂无详细介绍，点击链接直接前往下载或查看详情。'}</p>
+                        
+                        <!-- Consolidated Category & Tags on ONE SINGLE LINE (Category always in front) -->
+                        <div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">
+                            <span class="text-[9px] text-purple-400 bg-purple-500/5 border border-purple-500/15 px-1.5 py-0.5 rounded-md inline-block font-semibold shrink-0">${item.category}</span>
+                            ${tagChips}
+                        </div>
+                    </div>
+
+                    <!-- Footer Options -->
+                    <div class="space-y-2 w-full">
+                        ${codeHtml}
+                        <div class="grid grid-cols-2 gap-2 pt-0.5">
+                            <button onclick="trackClick(${originalIndex}); copyToClipboard('${item.link}', '分享地址已成功拷贝！')" class="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 border border-gray-900 hover:border-gray-800 hover:bg-gray-900/30 rounded-xl text-xs text-gray-400 hover:text-white transition font-medium">
+                                <i data-lucide="link-2" class="h-3.5 w-3.5"></i>
+                                <span>复制地址</span>
+                            </button>
+                            ${linkActionHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // Render Recommended tags dynamically managed by Admin
+        function renderHotTags() {
+            const container = document.getElementById('hotTagsContainer');
+            container.innerHTML = '';
+            
+            if (hotTags.length === 0) {
+                container.innerHTML = `<span class="text-[10px] text-gray-500 italic">暂无推荐标签</span>`;
+                return;
+            }
+
+            hotTags.forEach(tag => {
+                const tagBtn = document.createElement('button');
+                tagBtn.onclick = () => setTagSearch(tag);
+                tagBtn.className = "px-2 py-0.5 bg-gray-950 hover:bg-indigo-500/10 text-gray-500 hover:text-indigo-400 border border-gray-900 hover:border-indigo-500/20 rounded-md text-[10px] transition-all";
+                tagBtn.innerText = `# ${tag}`;
+                container.appendChild(tagBtn);
+            });
+        }
+
+        // Update Statistics
+        function updateStats() {
+            document.getElementById('statTotal').innerText = resources.length;
+            document.getElementById('statCategories').innerText = categories.length;
+        }
+
+        // Filter Hand、Search and Reset
+        function selectCategory(cat) {
+            activeCategory = cat;
+            renderAll();
+        }
+
+        // Search action
+        function handleSearch(val) {
+            searchQuery = val;
+            renderResources();
+        }
+
+        // Set search query based on dynamic tags clicked
+        function setTagSearch(tag) {
+            document.getElementById('searchInput').value = tag;
+            searchQuery = tag;
+            renderResources();
+            document.getElementById('searchInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function resetFilters() {
+            activeCategory = '全部';
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            renderAll();
+        }
+
+        // Sort switcher (Fixed ReferenceError and added click tracker)
+        function setSort(type) {
+            currentSort = type;
+            const dateBtn = document.getElementById('sortDateBtn');
+            const clicksBtn = document.getElementById('sortClicksBtn');
+
+            if (type === 'date') {
+                dateBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white transition-all";
+                clicksBtn.className = "px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white rounded-lg transition-all";
+            } else {
+                clicksBtn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-500 text-white transition-all";
+                dateBtn.className = "px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white rounded-lg transition-all";
+            }
+            renderResources();
+        }
+
+        // ==========================================
+        // 🔒 ADMIN AUTH LOGIC (Security Upgrades)
+        // ==========================================
+        function handleAdminLogoutAction() {
+            customConfirm(
+                '确认退出管理员模式？',
+                '注销登出后，网页上所有的全局配置修改、公告栏编辑、标签管理、备份等入口将重新隐藏。',
+                () => {
+                    isAdmin = false;
+                    sessionStorage.removeItem('SHARE_ADMIN_ACTIVE');
+                    updateAdminUi();
+                    showToast('🔒 管理员控制台已安全退出', 'warning');
+                }
+            );
+        }
+
+        // Toggle UI layouts based on Admin validation
+        function updateAdminUi(suppressToast = false) {
+            const adminNavbarContainer = document.getElementById('adminNavbarContainer');
+            const categoryAdminTriggerContainer = document.getElementById('categoryAdminTriggerContainer');
+            const adminActionsBar = document.getElementById('adminActionsBar');
+            const quickTips = document.getElementById('quickTipsCard');
+            
+            if (isAdmin) {
+                adminNavbarContainer.classList.remove('hidden');
+                adminNavbarContainer.classList.add('flex');
+                categoryAdminTriggerContainer.classList.remove('hidden');
+                adminActionsBar.classList.remove('hidden');
+                adminActionsBar.classList.add('flex');
+
+                // Admin view sidebar hints
+                quickTips.innerHTML = `
+                    <div class="flex items-center gap-1.5 text-gray-400 font-semibold mb-1">
+                        <i data-lucide="sparkles" class="h-3.5 w-3.5 text-amber-400"></i>
+                        <span>管理员配置向导</span>
+                    </div>
+                    <p class="leading-relaxed">修改站点名称/简介/公告/分类/标签/资源后，请点击上方<b>“备份管理” -> “导出 JSON”</b>进行固化。</p>
+                    <p class="leading-relaxed">将数据复制替换源码对应的 <code class="text-indigo-400">INITIAL_RESOURCES</code> 与配置变量，即可完成部署！</p>
+                `;
+
+                if(!suppressToast) {
+                    showToast('🔑 专属暗号验证通过！管理员后台已解锁', 'success');
+                }
+            } else {
+                adminNavbarContainer.classList.add('hidden');
+                adminNavbarContainer.classList.remove('flex');
+                categoryAdminTriggerContainer.classList.add('hidden');
+                adminActionsBar.classList.add('hidden');
+                adminActionsBar.classList.remove('flex');
+
+                // Standard visitor sidebar announcement
+                quickTips.innerHTML = `
+                    <div class="flex items-center gap-1.5 text-gray-400 font-semibold mb-1">
+                        <i data-lucide="info" class="h-3.5 w-3.5 text-indigo-400"></i>
+                        <span>欢迎来到 ${siteConfig.siteName}</span>
+                    </div>
+                    <p class="leading-relaxed">本站为一个纯静态极速资源汇聚索引市集。点击各卡片的下载链接或直接一键复制代码即可免费下载对应资源。</p>
+                    <p class="leading-relaxed">遇到任何失效链接或反馈建议，欢迎在社群中向站长提出反馈！祝获取愉快！</p>
+                `;
+            }
+            renderAll();
+        }
+
+        // ==========================================
+        // ⚙️ SITE GLOBAL CONFIG CONTROLLERS
+        // ==========================================
+        function openSiteConfigModal() {
+            if (!isAdmin) return;
+            document.getElementById('cfgSiteName').value = siteConfig.siteName;
+            document.getElementById('cfgSiteEmoji').value = siteConfig.siteEmoji || '⚡';
+            document.getElementById('cfgSiteDesc').value = siteConfig.siteDesc;
+            document.getElementById('cfgPasscode').value = siteConfig.passcode;
+            document.getElementById('siteConfigModal').classList.remove('hidden');
+        }
+
+        function handleSiteConfigSubmit(e) {
+            e.preventDefault();
+            
+            const newName = document.getElementById('cfgSiteName').value.trim();
+            const newEmoji = document.getElementById('cfgSiteEmoji').value.trim();
+            const newDesc = document.getElementById('cfgSiteDesc').value.trim();
+            const newCode = document.getElementById('cfgPasscode').value.trim();
+
+            siteConfig.siteName = newName;
+            siteConfig.siteEmoji = newEmoji;
+            siteConfig.siteDesc = newDesc;
+            siteConfig.passcode = newCode;
+
+            localStorage.setItem('SHARE_SITE_CONFIG', JSON.stringify(siteConfig));
+            applySiteConfigToDOM();
+            updateAdminUi(true);
+            closeModal('siteConfigModal');
+            showToast('✅ 网站全局配置更新成功！重新编译后生效');
+        }
+
+        // ==========================================
+        // 📣 ANNOUNCEMENT LOGIC CONTROLLERS
+        // ==========================================
+        function openAnnouncementModal(idx) {
+            if (!isAdmin) return;
+            document.getElementById('announcementForm').reset();
+            
+            if (idx >= 0) {
+                // Edit mode
+                const ann = announcements[idx];
+                document.getElementById('annEditIndex').value = idx;
+                document.getElementById('annModalTitle').innerText = "修改通告公告";
+                document.getElementById('annType').value = ann.type;
+                document.getElementById('annContent').value = ann.content;
+            } else {
+                // Add mode
+                document.getElementById('annEditIndex').value = "-1";
+                document.getElementById('annModalTitle').innerText = "发布新通知公告";
+            }
+            document.getElementById('announcementModal').classList.remove('hidden');
+        }
+
+        function handleAnnouncementSubmit(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('annEditIndex').value);
+
+            const newAnn = {
+                content: document.getElementById('annContent').value.trim(),
+                type: document.getElementById('annType').value,
+                date: idx >= 0 ? announcements[idx].date : new Date().toISOString().split('T')[0]
+            };
+
+            if (idx >= 0) {
+                announcements[idx] = newAnn;
+                showToast('✏️ 公告内容修改成功！');
+            } else {
+                announcements.unshift(newAnn);
+                showToast('🎉 新通知上架发布成功！');
+            }
+
+            saveAnnouncements();
+            closeModal('announcementModal');
+        }
+
+        function deleteAnnouncement(idx) {
+            if (!isAdmin) return;
+            customConfirm(
+                '确认删除公告吗？',
+                '即将从本地存储中彻底清除本条通告内容。',
+                () => {
+                    announcements.splice(idx, 1);
+                    saveAnnouncements();
+                    showToast('🗑️ 公告已彻底移除', 'warning');
+                }
+            );
+        }
+
+        function saveAnnouncements() {
+            localStorage.setItem('SHARE_ANNOUNCEMENTS', JSON.stringify(announcements));
+            renderAll();
+        }
+
+        // ==========================================
+        // 🏷️ RECOMMEND TAGS MANAGER MODULE
+        // ==========================================
+        function openTagManagerModal() {
+            if (!isAdmin) return;
+            renderTagManagerList();
+            document.getElementById('newTagInput').value = '';
+            document.getElementById('tagManagerModal').classList.remove('hidden');
+        }
+
+        function renderTagManagerList() {
+            const list = document.getElementById('tagManagerList');
+            list.innerHTML = '';
+
+            if (hotTags.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">暂无自定义推荐标签。</p>`;
+                return;
+            }
+
+            hotTags.forEach((tag, index) => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl";
+
+                row.innerHTML = `
+                    <div class="flex-grow flex items-center space-x-2">
+                        <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-lg shrink-0 font-bold"># ${index + 1}</span>
+                        <input type="text" value="${tag}" onchange="renameTag(${index}, this.value)" class="flex-grow bg-transparent text-xs text-gray-200 border-b border-transparent hover:border-gray-850 focus:border-amber-555 focus:outline-none px-1 py-0.5">
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="triggerDeleteTag(${index})" class="p-1 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="删除标签">
+                            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        // Added recommended tags
+        function addNewTag() {
+            const input = document.getElementById('newTagInput');
+            let newTag = input.value.trim();
+
+            // Stripping symbol hashtag out if any
+            newTag = newTag.replace(/^#+/, '').trim();
+
+            if (!newTag) {
+                showToast('标签文本不能为空！', 'error');
+                return;
+            }
+            if (hotTags.includes(newTag)) {
+                showToast('标签已存在于推荐队列中！', 'error');
+                return;
+            }
+
+            hotTags.push(newTag);
+            saveHotTags();
+            renderTagManagerList();
+            input.value = '';
+            showToast(`🏷️ 标签 【#${newTag}】 推荐成功！`);
+        }
+
+        function renameTag(index, newValue) {
+            newValue = newValue.trim().replace(/^#+/, '');
+            const oldValue = hotTags[index];
+
+            if (!newValue) {
+                showToast('标签不能为空', 'error');
+                renderTagManagerList();
+                return;
+            }
+
+            if (newValue === oldValue) return;
+
+            if (hotTags.includes(newValue) && hotTags.indexOf(newValue) !== index) {
+                showToast('已存在其他相同的标签', 'error');
+                renderTagManagerList();
+                return;
+            }
+
+            hotTags[index] = newValue;
+            saveHotTags();
+            renderTagManagerList();
+            showToast(`✏️ 标签已成功更名为 【#${newValue}】！`);
+        }
+
+        function triggerDeleteTag(index) {
+            const tagToDelete = hotTags[index];
+            customConfirm(
+                '确认下架推荐标签？',
+                `即将从搜索下方的快捷推荐栏中移除：【#${tagToDelete}】。此操作不会影响已添加资源的详情标签。`,
+                () => {
+                    hotTags.splice(index, 1);
+                    saveHotTags();
+                    renderTagManagerList();
+                    showToast('🗑️ 推荐标签已移出快捷栏', 'warning');
+                }
+            );
+        }
+
+        // Save Hot tags
+        function saveHotTags() {
+            localStorage.setItem('SHARE_HOT_TAGS', JSON.stringify(hotTags));
+            renderHotTags();
+        }
+
+        // Add/Edit Resource Modal Handlers
+        function openAddModal() {
+            if (!isAdmin) return;
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('modalTitle').innerText = "发布新分享资源";
+            document.getElementById('resourceForm').reset();
+            
+            const emojis = ["💡", "🛠️", "📘", "⚡", "🎨", "📦", "🌐", "⚙️", "🎬", "💰"];
+            document.getElementById('resEmoji').value = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            populateModalCategoryDropdown();
+            document.getElementById('resourceModal').classList.remove('hidden');
+        }
+
+        function editResource(idx) {
+            if (!isAdmin) return;
+            const item = resources[idx];
+            document.getElementById('editIndex').value = idx;
+            document.getElementById('modalTitle').innerText = "修改资源配置";
+            
+            populateModalCategoryDropdown();
+            
+            document.getElementById('resTitle').value = item.title;
+            document.getElementById('resCategory').value = item.category || '其他';
+            document.getElementById('resEmoji').value = item.emoji || "📦";
+            document.getElementById('resLink').value = item.link;
+            document.getElementById('resCode').value = item.code || '';
+            document.getElementById('resDesc').value = item.desc || '';
+            document.getElementById('resTags').value = item.tags || '';
+            
+            document.getElementById('resourceModal').classList.remove('hidden');
+        }
+
+        function triggerDeleteResource(idx) {
+            if (!isAdmin) return;
+            customConfirm(
+                '确认删除该资源吗？',
+                `即将从本地浏览器存储中清除：【${resources[idx].title}】。`,
+                () => {
+                    resources.splice(idx, 1);
+                    saveData();
+                    showToast('🗑️ 资源已彻底删除', 'warning');
+                }
+            );
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('editIndex').value);
+            
+            const newResource = {
+                title: document.getElementById('resTitle').value.trim(),
+                category: document.getElementById('resCategory').value,
+                emoji: document.getElementById('resEmoji').value.trim() || '📦',
+                link: document.getElementById('resLink').value.trim(),
+                code: document.getElementById('resCode').value.trim(),
+                desc: document.getElementById('resDesc').value.trim(),
+                tags: document.getElementById('resTags').value.trim(),
+                clicks: idx >= 0 ? (resources[idx].clicks || 0) : 0, // Preserve click counts
+                date: idx >= 0 ? resources[idx].date : new Date().toISOString().split('T')[0]
+            };
+
+            if (idx >= 0) {
+                resources[idx] = newResource;
+                showToast('✏️ 资源已修改并保存成功');
+            } else {
+                resources.unshift(newResource);
+                showToast('🎉 新增单项分享发布成功！');
+            }
+
+            saveData();
+            closeModal('resourceModal');
+        }
+
+        // ==========================================
+        // CATEGORY MANAGER MODULE
+        // ==========================================
+        function openCategoryManagerModal() {
+            if (!isAdmin) return;
+            renderCategoryManagerList();
+            document.getElementById('newCategoryInput').value = '';
+            document.getElementById('categoryManagerModal').classList.remove('hidden');
+        }
+
+        function renderCategoryManagerList() {
+            const list = document.getElementById('categoryManagerList');
+            list.innerHTML = '';
+
+            if(categories.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">暂无自定义分类，请在下方添加。</p>`;
+                return;
+            }
+
+            categories.forEach((cat, index) => {
+                const count = resources.filter(r => r.category === cat).length;
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl";
+
+                row.innerHTML = `
+                    <div class="flex-grow flex items-center space-x-2">
+                        <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded-lg shrink-0 font-bold">${index + 1}</span>
+                        <input type="text" value="${cat}" onchange="renameCategory(${index}, this.value)" class="flex-grow bg-transparent text-xs text-gray-200 border-b border-transparent hover:border-gray-850 focus:border-indigo-500 focus:outline-none px-1 py-0.5">
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[9px] text-gray-650 shrink-0">关联 ${count} 个资源</span>
+                        <button onclick="triggerDeleteCategory(${index})" class="p-1 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition" title="删除该分类">
+                            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        function addNewCategory() {
+            const input = document.getElementById('newCategoryInput');
+            const newCat = input.value.trim();
+
+            if (!newCat) {
+                showToast('分类名称不能为空', 'error');
+                return;
+            }
+            if (categories.includes(newCat) || newCat === '全部') {
+                showToast('已存在同名分类！', 'error');
+                return;
+            }
+
+            categories.push(newCat);
+            saveCategories();
+            renderCategoryManagerList();
+            input.value = '';
+            showToast(`📁 分类【${newCat}】创建成功！`);
+        }
+
+        function renameCategory(index, newValue) {
+            newValue = newValue.trim();
+            const oldValue = categories[index];
+
+            if(!newValue) {
+                showToast('分类名称不能为空', 'error');
+                renderCategoryManagerList();
+                return;
+            }
+
+            if (newValue === oldValue) return;
+
+            if (categories.includes(newValue) && categories.indexOf(newValue) !== index) {
+                showToast('已经存在另一个相同名称的分类', 'error');
+                renderCategoryManagerList();
+                return;
+            }
+
+            // Update local categories
+            categories[index] = newValue;
+            
+            // Smart cascade: Rename all resources matching the old category name!
+            let affectedCount = 0;
+            resources.forEach(res => {
+                if(res.category === oldValue) {
+                    res.category = newValue;
+                    affectedCount++;
+                }
+            });
+
+            saveCategories();
+            saveData(); // Save resources
+            renderCategoryManagerList();
+            
+            if (activeCategory === oldValue) {
+                activeCategory = newValue;
+            }
+
+            showToast(`📝 分类更名成功，自动重定向 ${affectedCount} 个关联资源！`);
+        }
+
+        function triggerDeleteCategory(index) {
+            const catToDelete = categories[index];
+            const count = resources.filter(r => r.category === catToDelete).length;
+
+            customConfirm(
+                '确认删除分类？',
+                `即将删除分类【${catToDelete}】。此分类下的 ${count} 个资源将被自动归入“其他”分类，防止丢失。`,
+                () => {
+                    categories.splice(index, 1);
+                    
+                    if(!categories.includes('其他')) {
+                        categories.push('其他');
+                    }
+
+                    // Cascade resources
+                    resources.forEach(res => {
+                        if(res.category === catToDelete) {
+                            res.category = '其他';
+                        }
+                    });
+
+                    saveCategories();
+                    saveData();
+                    renderCategoryManagerList();
+
+                    if (activeCategory === catToDelete) {
+                        activeCategory = '全部';
+                    }
+
+                    showToast(`🗑️ 分类已删除，关联资源安全归入“其他”分类`, 'warning');
+                }
+            );
+        }
+
+        function saveCategories() {
+            localStorage.setItem('SHARE_CATEGORIES', JSON.stringify(categories));
+            renderCategoryTabs();
+            populateModalCategoryDropdown();
+            updateStats();
+        }
+
+        // ==========================================
+        // SMART BATCH IMPORT LOGIC
+        // ==========================================
+        function openBulkImportModal() {
+            if (!isAdmin) return;
+            clearBulkInput();
+            document.getElementById('bulkImportModal').classList.remove('hidden');
+        }
+
+        function clearBulkInput() {
+            document.getElementById('bulkInputArea').value = '';
+            parsedBulkItems = [];
+            updateBulkPreviewTable();
+        }
+
+        // Live Spreadsheet Parsing Logic
+        function liveParseInput(text) {
+            const lines = text.split('\n');
+            parsedBulkItems = [];
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+            lines.forEach((line, index) => {
+                line = line.trim();
+                if (!line) return;
+
+                let title = '';
+                let link = '';
+                let category = '其他';
+                let code = '';
+                let desc = '';
+                let tags = '';
+
+                // Match excel tab-separated row
+                if (line.includes('\t')) {
+                    const cols = line.split('\t').map(c => c.trim());
+                    if (cols.length >= 2) {
+                        title = cols[0];
+                        // Try to find which column looks like a URL
+                        const urlColIdx = cols.findIndex(c => urlRegex.test(c));
+                        
+                        if (urlColIdx !== -1) {
+                            link = cols[urlColIdx];
+                            // The remaining column might be the category
+                            const remainingCols = cols.filter((_, idx) => idx !== urlColIdx && idx !== 0);
+                            if (remainingCols.length > 0) {
+                                category = remainingCols[0];
+                            }
+                        } else {
+                            // No standard URL, check if column has offline messages
+                            if(cols[1] && (cols[1].includes('获取') || cols[1].includes('扫描') || cols[1].includes('下载'))) {
+                                link = cols[1];
+                            } else {
+                                link = cols[1] || '无';
+                            }
+                            category = cols[2] || '其他';
+                        }
+                    } else {
+                        title = cols[0];
+                        link = '群内获取';
+                    }
+                } else {
+                    // Try to scan using regex fallback for non-structured lists
+                    const matches = line.match(urlRegex);
+                    if (matches && matches.length > 0) {
+                        link = matches[0];
+                        const parts = line.split(link);
+                        title = parts[0].trim().replace(/^[\s\-\|]+|[\s\-\|]+$/g, '');
+                        if (parts[1] && parts[1].trim()) {
+                            category = parts[1].trim().replace(/^[\s\-\|]+|[\s\-\|]+$/g, '');
+                        }
+                    } else {
+                        // Plain string item with no link
+                        title = line;
+                        link = '群内获取';
+                    }
+                }
+
+                // Title cleanup (quotes, tags etc)
+                title = title.replace(/^["']|["']$/g, '').trim();
+                if (!title) return;
+
+                // Standardize category and auto-assign icons
+                category = category.replace(/[\[\]\(\)]/g, '').trim();
+                if (!category || category === '无') category = '其他';
+
+                // Attempt to match with existing custom categories for close spelling
+                const matchedCustomCat = categories.find(c => c.toLowerCase() === category.toLowerCase() || category.toLowerCase().includes(c.toLowerCase()));
+                if (matchedCustomCat) {
+                    category = matchedCustomCat;
+                } else {
+                    // Fallback to "其他" if the parsed category is not currently in our active categories
+                    if(!categories.includes(category)) {
+                        category = '其他';
+                    }
+                }
+
+                // Map category keywords to premium emojis
+                let emoji = '📦';
+                const lowerCat = category.toLowerCase();
+                const lowerTitle = title.toLowerCase();
+
+                if (lowerCat.includes('网') || lowerCat.includes('站') || lowerCat.includes('web') || lowerTitle.includes('论坛')) emoji = '🌐';
+                else if (lowerCat.includes('付费') || lowerCat.includes('教程') || lowerCat.includes('课程') || lowerCat.includes('剪辑') || lowerCat.includes('影视') || lowerTitle.includes('课')) emoji = '🎬';
+                else if (lowerCat.includes('学') || lowerCat.includes('考') || lowerCat.includes('书') || lowerTitle.includes('讲义')) emoji = '📘';
+                else if (lowerCat.includes('工具') || lowerCat.includes('软件') || lowerCat.includes('应用') || lowerTitle.includes('软件') || lowerTitle.includes('助手')) emoji = '🛠️';
+                else if (lowerCat.includes('副业')) emoji = '💰';
+
+                // Attempt to auto-parse standard extraction password
+                const codeMatch = line.match(/(?:提取码|密码|code|pw)[\s:：]*([a-zA-Z0-9]{4,6})/i);
+                if (codeMatch) {
+                    code = codeMatch[1];
+                }
+
+                // Build item object
+                parsedBulkItems.push({
+                    importEnabled: true,
+                    title: title,
+                    category: category,
+                    emoji: emoji,
+                    link: link,
+                    code: code,
+                    desc: `批量快速识别入库。归类自: ${category}`,
+                    tags: `${category}, 批量导入`,
+                    clicks: 0,
+                    date: new Date().toISOString().split('T')[0]
+                });
+            });
+
+            updateBulkPreviewTable();
+        }
+
+        // Render dynamic table inside bulk import modal
+        function updateBulkPreviewTable() {
+            const tbody = document.getElementById('bulkPreviewTable');
+            const countLabel = document.getElementById('parsedCount');
+            tbody.innerHTML = '';
+
+            countLabel.innerText = parsedBulkItems.length;
+
+            if (parsedBulkItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 text-center text-gray-600 text-xs italic">
+                            暂无数据输入，支持多列及带Tab的剪贴板数据
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            parsedBulkItems.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-900 hover:bg-gray-900/20 text-[11px] transition";
+                
+                // Construct a dynamic option list for categories in the bulk table row
+                const catOptions = categories.map(c => `<option value="${c}" ${item.category === c ? 'selected' : ''}>${c}</option>`).join('');
+
+                tr.innerHTML = `
+                    <td class="py-2 px-2 text-center">
+                        <input type="checkbox" ${item.importEnabled ? 'checked' : ''} onchange="toggleBulkItem(${index})" class="rounded border-gray-800 text-indigo-500 focus:ring-indigo-500 bg-gray-950">
+                    </td>
+                    <td class="py-2 px-2 text-center text-base">${item.emoji}</td>
+                    <td class="py-2 px-2">
+                        <div class="font-semibold text-gray-200 truncate max-w-[200px]" title="${item.title}">${item.title}</div>
+                        <div class="text-[9px] text-gray-500 truncate max-w-[200px] font-mono" title="${item.link}">${item.link}</div>
+                    </td>
+                    <td class="py-2 px-2">
+                        <select onchange="updateBulkItemCategory(${index}, this.value)" class="w-full bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-gray-200 text-[11px] focus:outline-none focus:border-indigo-500">
+                            ${catOptions}
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleBulkItem(idx) {
+            parsedBulkItems[idx].importEnabled = !parsedBulkItems[idx].importEnabled;
+        }
+
+        function updateBulkItemCategory(idx, val) {
+            parsedBulkItems[idx].category = val.trim();
+        }
+
+        // Confirm batch addition
+        function submitBulkImport() {
+            const activeImports = parsedBulkItems.filter(item => item.importEnabled);
+            if (activeImports.length === 0) {
+                showToast('未选择任何有效的解析条目', 'error');
+                return;
+            }
+
+            // Merge items
+            activeImports.forEach(item => {
+                const finalObj = { ...item };
+                delete finalObj.importEnabled;
+                resources.unshift(finalObj);
+            });
+
+            saveData();
+            closeModal('bulkImportModal');
+            showToast(`🚀 成功合并 ${activeImports.length} 个新分享至本地数据库！`);
+        }
+
+        // Save Data and close tools
+        function saveData() {
+            localStorage.setItem('SHARE_RESOURCES', JSON.stringify(resources));
+            renderAll();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Reset to initial backups safely
+        function triggerDefaultReset() {
+            customConfirm(
+                '确认还原所有默认更改？',
+                '您的所有自定义资源、网站全局配置、推荐标签、批量导入、分类配置等本地数据将被全部清空并恢复至出厂演示数据。',
+                () => {
+                    resources = [...INITIAL_RESOURCES];
+                    categories = [...INITIAL_CATEGORIES];
+                    hotTags = [...INITIAL_HOT_TAGS];
+                    announcements = [...INITIAL_ANNOUNCEMENTS];
+                    siteConfig = { ...INITIAL_CONFIG };
+
+                    localStorage.setItem('SHARE_CATEGORIES', JSON.stringify(categories));
+                    localStorage.setItem('SHARE_HOT_TAGS', JSON.stringify(hotTags));
+                    localStorage.setItem('SHARE_ANNOUNCEMENTS', JSON.stringify(announcements));
+                    localStorage.setItem('SHARE_SITE_CONFIG', JSON.stringify(siteConfig));
+
+                    applySiteConfigToDOM();
+                    saveData();
+                    showToast('💡 全站数据（包含标签与点击量）已恢复出厂设置！');
+                }
+            );
+        }
+
+        // Modal Backup controls (Now fully exports siteConfig, categories, hotTags, announcements, and resources!)
+        function openExportModal() {
+            // Generate combined exports code block for easiest replacements
+            const combinedOutput = `// 1. 将此段完全复制并覆盖替换至代码第 628 行左右：\nconst INITIAL_CONFIG = ${JSON.stringify(siteConfig, null, 4)};\n\n// 2. 将此段完全复制并覆盖替换至代码第 638 行左右：\nconst INITIAL_CATEGORIES = ${JSON.stringify(categories, null, 4)};\n\n// 3. 将此段完全复制并覆盖替换至代码第 641 行左右：\nconst INITIAL_HOT_TAGS = ${JSON.stringify(hotTags, null, 4)};\n\n// 4. 将此段完全复制并覆盖替换至代码第 644 行左右：\nconst INITIAL_ANNOUNCEMENTS = ${JSON.stringify(announcements, null, 4)};\n\n// 5. 将此段完全复制并覆盖替换至代码第 658 行左右：\nconst INITIAL_RESOURCES = ${JSON.stringify(resources, null, 4)};`;
+            
+            document.getElementById('combinedExportTextarea').value = combinedOutput;
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function copyCombinedExportJson() {
+            const codeOutput = document.getElementById('combinedExportTextarea').value;
+            copyToClipboard(codeOutput, '整包静态部署代码配置已一键打包拷贝！快去替换源码吧 🚀');
+        }
+
+        function openImportModal() {
+            document.getElementById('importJsonArea').value = '';
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function handleImportJson() {
+            const inputVal = document.getElementById('importJsonArea').value.trim();
+            if (!inputVal) {
+                showToast('输入内容不能为空！', 'error');
+                return;
+            }
+
+            try {
+                // Compatibility for raw arrays
+                const parsed = JSON.parse(inputVal);
+                if (Array.isArray(parsed)) {
+                    resources = parsed;
+                    
+                    // Harvest any categories inside the imported dataset that we don't have
+                    const parsedCats = new Set(categories);
+                    parsed.forEach(res => {
+                        if (res.category && !parsedCats.has(res.category)) {
+                            parsedCats.add(res.category);
+                        }
+                    });
+                    categories = Array.from(parsedCats);
+                    
+                    saveCategories();
+                    saveData();
+                    closeModal('importModal');
+                    showToast('🧬 数据集恢复覆盖完成！');
+                } else {
+                    showToast('数据格式不合法，请检查JSON或全量备份规范。', 'error');
+                }
+            } catch (err) {
+                showToast('解析失败，请确保粘贴的是标准的 JSON 文本格式', 'error');
+            }
+        }
+
+        // Toggle UI Dropdowns
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+            
+            const handler = function(e) {
+                if (!e.target.closest('.relative')) {
+                    el.classList.add('hidden');
+                    document.removeEventListener('click', handler);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', handler), 50);
+        }
+
+        // Copy Engine with sandboxed iframe fallback support
+        function copyToClipboard(text, successMessage) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMessage || '复制成功！');
+                } else {
+                    showToast('复制失败，请尝试鼠标手动选定', 'error');
+                }
+            } catch (err) {
+                showToast('浏览器配置受限，无法触发快捷指令', 'error');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Beautiful Dynamic Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = "flex items-center space-x-3 px-3.5 py-2.5 rounded-xl border shadow-xl bg-gray-950/95 backdrop-blur-md pointer-events-auto transform transition duration-300 opacity-0 translate-y-2";
+            
+            let colorBorder = "border-emerald-500/20";
+            let iconCode = "check-circle";
+            let iconColor = "text-emerald-400";
+            
+            if (type === 'error') {
+                colorBorder = "border-red-500/20";
+                iconCode = "alert-triangle";
+                iconColor = "text-red-400";
+            } else if (type === 'warning') {
+                colorBorder = "border-amber-500/20";
+                iconCode = "alert-circle";
+                iconColor = "text-amber-400";
+            }
+
+            toast.classList.add(colorBorder);
+            toast.innerHTML = `
+                <div class="${iconColor} shrink-0">
+                    <i data-lucide="${iconCode}" class="h-4 w-4"></i>
+                </div>
+                <div class="text-[11px] font-bold text-gray-255 leading-tight">${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-8px]');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 2800);
+        }
+    </script>
+</body>
+</html>
