@@ -120,11 +120,11 @@
                     
                     <!-- Export / Import Options Dropdown -->
                     <div class="relative inline-block text-left">
-                        <button onclick="toggleDropdown('configDropdown')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-855 text-xs font-medium text-gray-300 transition-all border border-gray-800">
+                        <button onclick="toggleDropdown('configDropdown')" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-xs font-medium text-gray-300 transition-all border border-gray-800">
                             <i data-lucide="database" class="h-3.5 w-3.5"></i>
                             <span class="hidden sm:inline">备份管理</span>
                         </button>
-                        <div id="configDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-gray-955 border border-gray-900 shadow-2xl z-50 py-1">
+                        <div id="configDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl bg-gray-950 border border-gray-900 shadow-2xl z-50 py-1">
                             <button onclick="openExportModal()" class="w-full text-left px-4 py-2.5 text-xs text-gray-300 hover:bg-gray-900 flex items-center space-x-2">
                                 <i data-lucide="download" class="h-4 w-4 text-emerald-400"></i>
                                 <span>导出 JSON 配置</span>
@@ -221,18 +221,69 @@
         <!-- Right Content Block: Category Tab List + Sorting + Grid -->
         <section class="flex-grow space-y-4">
             
+            <!-- ADMIN COMMAND DASHBOARD (🔑 Fixes button overflow beautifully by giving admins a spacious layout!) -->
+            <div id="adminCommandDashboard" class="hidden bg-gradient-to-r from-indigo-950/30 via-purple-950/20 to-gray-950/40 border border-indigo-500/20 rounded-2xl p-5 backdrop-blur-sm fade-in">
+                <div class="flex items-center justify-between border-b border-gray-900 pb-3 mb-4">
+                    <div class="flex items-center space-x-2.5">
+                        <div class="h-8 w-8 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                            <i data-lucide="shield" class="h-4.5 w-4.5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xs font-bold text-white uppercase tracking-wider">站长控制台</h2>
+                            <p class="text-[10px] text-gray-500">已解锁高级管理特权，您的所有操作均实时同步缓存</p>
+                        </div>
+                    </div>
+                    <button onclick="handleAdminLogoutAction()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/15 text-[10px] transition-all">
+                        <i data-lucide="log-out" class="h-3 w-3"></i>
+                        <span>安全退出</span>
+                    </button>
+                </div>
+                
+                <!-- 5 Admin Actions Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3.5">
+                    <!-- Site Config -->
+                    <button onclick="openSiteConfigModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="settings" class="h-5 w-5 text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">网站设置</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">站名/简介/暗号修改</span>
+                    </button>
+                    <!-- Category Manage -->
+                    <button onclick="openCategoryManagerModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="folder-cog" class="h-5 w-5 text-indigo-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">分类管理</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">横向 Tab 分类增删改</span>
+                    </button>
+                    <!-- Tag Manage -->
+                    <button onclick="openTagManagerModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="tags" class="h-5 w-5 text-amber-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">标签管理</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">首页推荐搜索词</span>
+                    </button>
+                    <!-- Add Announcement -->
+                    <button onclick="openAnnouncementModal(-1)" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="megaphone" class="h-5 w-5 text-purple-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">发布公告</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">顶置全局跑马灯</span>
+                    </button>
+                    <!-- Bulk Import -->
+                    <button onclick="openBulkImportModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-950/60 hover:bg-indigo-950/20 border border-gray-900 hover:border-indigo-500/30 text-gray-300 hover:text-white transition group text-center">
+                        <i data-lucide="sheet" class="h-5 w-5 text-emerald-400 mb-1.5 group-hover:scale-110 transition-transform"></i>
+                        <span class="text-xs font-semibold">智能批量导入</span>
+                        <span class="text-[9px] text-gray-500 mt-0.5 hidden sm:inline">Excel/飞书表格复制导入</span>
+                    </button>
+                </div>
+
+                <!-- Single Add Button -->
+                <button onclick="openAddModal()" class="w-full py-2.5 bg-gradient-to-r from-indigo-550 to-purple-650 bg-indigo-500 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/15 transition-all">
+                    <i data-lucide="plus-circle" class="h-4 w-4"></i>
+                    <span>发布单项分享资源</span>
+                </button>
+            </div>
+
             <!-- Category Tabs Container -->
             <div class="bg-darkCard/20 p-1.5 rounded-2xl border border-gray-900/60 flex items-center overflow-x-auto scrollbar-none justify-between gap-2">
                 <div id="categoryTabs" class="flex items-center gap-1 overflow-x-auto scrollbar-none">
                     <!-- JS Dynamically injects Premium Tabs here -->
-                </div>
-                
-                <!-- Manage Categories Trigger (Strictly HIDDEN for normal visitors) -->
-                <div id="categoryAdminTriggerContainer" class="hidden shrink-0 pl-2 border-l border-gray-900">
-                    <button onclick="openCategoryManagerModal()" class="flex items-center space-x-1 px-3 py-2 bg-indigo-500/10 hover:bg-indigo-600 text-indigo-400 rounded-xl text-xs font-bold transition-all border border-indigo-500/20">
-                        <i data-lucide="folder-cog" class="h-3.5 w-3.5"></i>
-                        <span class="hidden sm:inline">管理分类</span>
-                    </button>
                 </div>
             </div>
 
@@ -245,36 +296,6 @@
                     <!-- Click Sort Option Added -->
                     <button onclick="setSort('clicks')" id="sortClicksBtn" class="px-3 py-1.5 text-xs font-semibold text-gray-400 hover:text-white rounded-lg transition-all">
                         热门点击
-                    </button>
-                </div>
-
-                <!-- Admin Action buttons wrapper (Strictly HIDDEN for normal visitors) -->
-                <div id="adminActionsBar" class="hidden items-center gap-2">
-                    <!-- Site Settings Action -->
-                    <button onclick="openSiteConfigModal()" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-indigo-500/50 text-indigo-400 rounded-xl text-xs font-bold transition-all">
-                        <i data-lucide="settings" class="h-4 w-4 inline mr-1"></i> 网站设置
-                    </button>
-
-                    <!-- Add Announcement Action -->
-                    <button onclick="openAnnouncementModal(-1)" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-purple-500/50 text-purple-400 rounded-xl text-xs font-bold transition-all">
-                        <i data-lucide="megaphone" class="h-4 w-4 inline mr-1"></i> 发布公告
-                    </button>
-
-                    <!-- Manage Tags Action -->
-                    <button onclick="openTagManagerModal()" class="px-3 py-2 bg-gray-900 border border-gray-800 hover:border-amber-500/50 text-amber-400 rounded-xl text-xs font-bold transition-all">
-                        <i data-lucide="tags" class="h-4 w-4 inline mr-1"></i> 标签管理
-                    </button>
-
-                    <!-- Bulk Import Action -->
-                    <button onclick="openBulkImportModal()" class="px-3.5 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-gray-350 hover:text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
-                        <i data-lucide="sheet" class="h-4 w-4 text-emerald-400"></i>
-                        <span>智能批量导入</span>
-                    </button>
-                    
-                    <!-- Single Add Resource Button -->
-                    <button onclick="openAddModal()" id="addResourceBtn" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 shadow-lg shadow-indigo-500/10 transition-all">
-                        <i data-lucide="plus-circle" class="h-4 w-4"></i>
-                        <span>单项添加</span>
                     </button>
                 </div>
             </div>
@@ -303,7 +324,7 @@
 
     <!-- SITE CONFIGURATION MODAL -->
     <div id="siteConfigModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-md p-6 shadow-2xl relative fade-in">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-md p-6 shadow-2xl relative fade-in">
             <!-- Close Btn -->
             <button onclick="closeModal('siteConfigModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -345,7 +366,7 @@
 
     <!-- ANNOUNCEMENT MODAL -->
     <div id="announcementModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative fade-in">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative fade-in">
             <!-- Close Btn -->
             <button onclick="closeModal('announcementModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -373,7 +394,7 @@
                     <button type="button" onclick="closeModal('announcementModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-900 hover:bg-gray-850 text-gray-400 transition-all">
                         取消
                     </button>
-                    <button type="submit" class="px-5 py-2 font-semibold rounded-xl bg-purple-500 hover:bg-purple-650 text-white shadow-lg shadow-purple-500/10 transition-all">
+                    <button type="submit" class="px-5 py-2 font-semibold rounded-xl bg-purple-500 hover:bg-purple-655 text-white shadow-lg shadow-purple-500/10 transition-all">
                         发布上架
                     </button>
                 </div>
@@ -405,7 +426,7 @@
             </div>
 
             <!-- Add Tag inline form -->
-            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-850 space-y-2 text-xs">
+            <div class="bg-gray-900/60 p-3 rounded-xl border border-gray-855 space-y-2 text-xs">
                 <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">新增快捷推荐标签</label>
                 <div class="flex space-x-2">
                     <input type="text" id="newTagInput" placeholder="请输入新标签名（不含 #，如: 精选）" class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
@@ -569,7 +590,7 @@
 
     <!-- CATEGORY MANAGER MODAL -->
     <div id="categoryManagerModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-md p-5 shadow-2xl relative fade-in flex flex-col max-h-[85vh]">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-md p-5 shadow-2xl relative fade-in flex flex-col max-h-[85vh]">
             <!-- Close Btn -->
             <button onclick="closeModal('categoryManagerModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -595,7 +616,7 @@
                 <label class="block text-[10px] text-gray-400 font-bold uppercase tracking-wider">创建新分类</label>
                 <div class="flex space-x-2">
                     <input type="text" id="newCategoryInput" placeholder="请输入分类名称（如：精选合集）" class="flex-grow bg-gray-950 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
-                    <button onclick="addNewCategory()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-650 text-white font-semibold rounded-xl transition-all">
+                    <button onclick="addNewCategory()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-655 text-white font-semibold rounded-xl transition-all">
                         创建
                     </button>
                 </div>
@@ -612,7 +633,7 @@
 
     <!-- EXPORT MODAL -->
     <div id="exportModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
             <!-- Close Btn -->
             <button onclick="closeModal('exportModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -642,7 +663,7 @@
 
     <!-- IMPORT MODAL -->
     <div id="importModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-lg p-5 shadow-2xl relative fade-in">
             <!-- Close Btn -->
             <button onclick="closeModal('importModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-900 transition">
                 <i data-lucide="x" class="h-5 w-5"></i>
@@ -659,7 +680,7 @@
                 <button onclick="closeModal('importModal')" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gray-900 hover:bg-gray-850 text-gray-350 transition-all">
                     关闭
                 </button>
-                <button onclick="handleImportJson()" class="px-5 py-2 text-xs font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-600 text-white transition-all">
+                <button onclick="handleImportJson()" class="px-5 py-2 text-xs font-semibold rounded-xl bg-indigo-550 hover:bg-indigo-650 text-white transition-all">
                     立即解析并覆盖
                 </button>
             </div>
@@ -668,7 +689,7 @@
 
     <!-- CUSTOM CONFIRMATION MODAL -->
     <div id="confirmModal" class="hidden fixed inset-0 z-[100] overflow-y-auto bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-950 border border-gray-900 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative fade-in text-center">
+        <div class="bg-gray-955 border border-gray-900 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative fade-in text-center">
             <div class="mx-auto w-12 h-12 bg-red-500/10 border border-red-500/30 rounded-full flex items-center justify-center text-red-500 mb-3">
                 <i data-lucide="help-circle" class="h-6 w-6"></i>
             </div>
@@ -676,7 +697,7 @@
             <p id="confirmMessage" class="text-xs text-gray-400 mb-5 leading-relaxed">此操作执行后将无法复原，请学长慎重决定。</p>
             <div class="flex items-center justify-center space-x-3">
                 <button id="confirmCancelBtn" class="px-4 py-2 text-xs font-semibold rounded-xl bg-gray-900 text-gray-400 hover:text-white transition">取消</button>
-                <button id="confirmOkBtn" class="px-5 py-2 text-xs font-semibold rounded-xl bg-red-500 hover:bg-red-650 text-white shadow-lg shadow-red-500/10 transition">确定</button>
+                <button id="confirmOkBtn" class="px-5 py-2 text-xs font-semibold rounded-xl bg-red-500 hover:bg-red-655 text-white shadow-lg shadow-red-500/10 transition">确定</button>
             </div>
         </div>
     </div>
@@ -1020,7 +1041,7 @@
                 // Render actions if current session is validated as admin
                 const adminOptionsHtml = isAdmin
                     ? `
-                        <div class="flex items-center space-x-1 shrink-0">
+                        <div class="flex items-center space-x-1 shrink-0 flex-nowrap">
                             <button onclick="openAnnouncementModal(${idx})" class="p-1.5 rounded-lg bg-gray-950/80 border border-gray-900 hover:border-indigo-500/30 text-gray-400 hover:text-white transition" title="编辑公告">
                                 <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
                             </button>
@@ -1186,7 +1207,7 @@
                 card.className = "bg-darkCard/30 border border-gray-900/80 rounded-2xl p-5 hover:border-gray-800 hover:bg-darkCard/60 transition-all duration-300 relative flex flex-col justify-between group fade-in";
 
                 const tagChips = item.tags 
-                    ? item.tags.split(',').map(t => `<span onclick="setTagSearch('${t.trim()}')" class="cursor-pointer bg-gray-950/80 hover:bg-gray-900 text-gray-500 hover:text-indigo-400 px-2 py-0.5 rounded text-[10px] border border-gray-900 transition">${t.trim()}</span>`).join(' ')
+                    ? item.tags.split(',').map(t => `<span onclick="setTagSearch('${t.trim()}')" class="cursor-pointer bg-gray-950/80 hover:bg-gray-900 text-gray-550 hover:text-indigo-400 px-2 py-0.5 rounded text-[10px] border border-gray-900 transition">${t.trim()}</span>`).join(' ')
                     : '';
 
                 const codeHtml = item.code 
@@ -1209,10 +1230,10 @@
                 const adminActions = isAdmin 
                     ? `
                         <div class="absolute top-4 right-4 flex space-x-1.5 z-20">
-                            <button onclick="editResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-indigo-600 border border-gray-800 hover:border-indigo-500 text-gray-350 hover:text-white shadow-lg transition-all" title="编辑资源">
+                            <button onclick="editResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-indigo-600 border border-gray-800 hover:border-indigo-500 text-gray-355 hover:text-white shadow-lg transition-all" title="编辑资源">
                                 <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
                             </button>
-                            <button onclick="triggerDeleteResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-red-650 border border-gray-800 hover:border-red-500 text-gray-350 hover:text-white shadow-lg transition-all" title="删除资源">
+                            <button onclick="triggerDeleteResource(${originalIndex})" class="p-1.5 rounded-xl bg-gray-900 hover:bg-red-655 border border-gray-800 hover:border-red-500 text-gray-355 hover:text-white shadow-lg transition-all" title="删除资源">
                                 <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
                             </button>
                         </div>
@@ -1236,7 +1257,7 @@
                     ${adminActions}
                     <div class="w-full">
                         <!-- Top Header Row: Logo + Title + Clicks (Align inline) -->
-                        <div class="flex items-start justify-between mb-3 w-full">
+                        <div class="flex items-start justify-between mb-3 w-full relative">
                             <div class="flex items-start space-x-2.5 overflow-hidden flex-grow mr-2">
                                 <div class="h-9 w-9 shrink-0 rounded-xl bg-gray-950 border border-gray-900 flex items-center justify-center text-lg">
                                     ${item.emoji || '📦'}
@@ -1353,7 +1374,7 @@
         function handleAdminLogoutAction() {
             customConfirm(
                 '确认退出管理员模式？',
-                '注销登出后，网页上所有的全局配置修改、公告栏编辑、标签管理、备份等入口将重新隐藏。',
+                '注销登出后，网页上所有的全局配置修改、公告栏编辑、标签管理、管理面板等控制指令将重新对普通访客完全隐藏隐形。',
                 () => {
                     isAdmin = false;
                     sessionStorage.removeItem('SHARE_ADMIN_ACTIVE');
@@ -1366,16 +1387,13 @@
         // Toggle UI layouts based on Admin validation
         function updateAdminUi(suppressToast = false) {
             const adminNavbarContainer = document.getElementById('adminNavbarContainer');
-            const categoryAdminTriggerContainer = document.getElementById('categoryAdminTriggerContainer');
-            const adminActionsBar = document.getElementById('adminActionsBar');
+            const adminCommandDashboard = document.getElementById('adminCommandDashboard');
             const quickTips = document.getElementById('quickTipsCard');
             
             if (isAdmin) {
                 adminNavbarContainer.classList.remove('hidden');
                 adminNavbarContainer.classList.add('flex');
-                categoryAdminTriggerContainer.classList.remove('hidden');
-                adminActionsBar.classList.remove('hidden');
-                adminActionsBar.classList.add('flex');
+                adminCommandDashboard.classList.remove('hidden');
 
                 // Admin view sidebar hints
                 quickTips.innerHTML = `
@@ -1393,9 +1411,7 @@
             } else {
                 adminNavbarContainer.classList.add('hidden');
                 adminNavbarContainer.classList.remove('flex');
-                categoryAdminTriggerContainer.classList.add('hidden');
-                adminActionsBar.classList.add('hidden');
-                adminActionsBar.classList.remove('flex');
+                adminCommandDashboard.classList.add('hidden');
 
                 // Standard visitor sidebar announcement
                 quickTips.innerHTML = `
@@ -2008,6 +2024,7 @@
             parsedBulkItems[idx].importEnabled = !parsedBulkItems[idx].importEnabled;
         }
 
+        // update bulk category selections
         function updateBulkItemCategory(idx, val) {
             parsedBulkItems[idx].category = val.trim();
         }
