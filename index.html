@@ -193,9 +193,15 @@
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <i data-lucide="search" class="text-gray-505 h-5 w-5"></i>
             </div>
-            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="搜索资源名称、标签、分类、链接或简介..." class="block w-full pl-11 pr-24 py-3 bg-gray-950/80 border border-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl text-xs sm:text-sm placeholder-gray-600 transition-all outline-none text-white shadow-xl backdrop-blur-sm">
-            <div class="absolute inset-y-1.5 right-1.5 flex items-center">
-                <span id="searchCount" class="text-[10px] bg-gray-900 text-gray-400 px-2 py-1.5 rounded-lg border border-gray-800 font-medium">0 项结果</span>
+            <input type="text" id="searchInput" oninput="handleSearchInput(this.value)" onkeydown="if(event.key==='Enter') triggerSearch()" placeholder="搜索资源名称、标签、分类、链接或简介..." class="block w-full pl-11 pr-28 py-3 bg-gray-950/80 border border-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl text-xs sm:text-sm placeholder-gray-600 transition-all outline-none text-white shadow-xl backdrop-blur-sm">
+            <div class="absolute inset-y-1.5 right-1.5 flex items-center gap-1">
+                <button id="searchClearBtn" onclick="clearSearch()" class="hidden p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-gray-800 transition" title="清除输入">
+                    <i data-lucide="x" class="h-3.5 w-3.5"></i>
+                </button>
+                <button onclick="triggerSearch()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white text-[11px] font-semibold transition">
+                    <i data-lucide="search" class="h-3 w-3"></i>
+                    <span>搜索</span>
+                </button>
             </div>
         </div>
 
@@ -503,18 +509,12 @@
                     <input type="text" id="resTitle" required placeholder="如：Figma 高保真网页UI设计包" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white placeholder-gray-600 focus:border-indigo-500 focus:outline-none">
                 </div>
 
-                <!-- Category & Emoji Picker Row -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">类别分类 *</label>
-                        <select id="resCategory" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
-                            <!-- Injected dynamically from custom categories -->
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-gray-400 font-semibold mb-1">图标/表情 (Emoji) *</label>
-                        <input type="text" id="resEmoji" required placeholder="💡 / 🛠️ / 📦 / 📘" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white text-center placeholder-gray-655 focus:border-indigo-500 focus:outline-none">
-                    </div>
+                <!-- Category -->
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">类别分类 *</label>
+                    <select id="resCategory" required class="w-full bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-white focus:border-indigo-500 focus:outline-none">
+                        <!-- Injected dynamically from custom categories -->
+                    </select>
                 </div>
 
                 <!-- Drive Link & Extraction Code -->
@@ -584,7 +584,17 @@
                 <div class="lg:col-span-7 flex flex-col space-y-2 overflow-hidden">
                     <div class="flex items-center justify-between">
                         <label class="block text-[10px] text-gray-400 font-semibold uppercase tracking-wider">实时智能解析预览 (<span id="parsedCount" class="text-emerald-400">0</span> 项已识别)：</label>
-                        <button onclick="clearBulkInput()" class="text-[10px] text-red-400 hover:underline">清空数据</button>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center bg-gray-950 border border-gray-800 rounded-lg overflow-hidden">
+                                <button onclick="setBulkSortOrder('asc')" id="bulkSortAscBtn" class="px-2 py-1 text-[10px] font-semibold text-white bg-emerald-600 transition flex items-center gap-1" title="正序">
+                                    <i data-lucide="arrow-up" class="h-3 w-3"></i>正序
+                                </button>
+                                <button onclick="setBulkSortOrder('desc')" id="bulkSortDescBtn" class="px-2 py-1 text-[10px] font-semibold text-gray-400 hover:text-white transition flex items-center gap-1" title="倒序">
+                                    <i data-lucide="arrow-down" class="h-3 w-3"></i>倒序
+                                </button>
+                            </div>
+                            <button onclick="clearBulkInput()" class="text-[10px] text-red-400 hover:underline">清空数据</button>
+                        </div>
                     </div>
                     
                     <div class="flex-grow overflow-auto border border-gray-900 rounded-xl bg-gray-900/40 p-2 text-xs">
@@ -923,6 +933,7 @@
         let parsedBulkItems = [];
         let bulkDeleteItems = [];
         let bulkDeleteFilter = '';
+        let bulkSortOrder = 'asc';
 
         // Initialize App
         window.onload = function() {
@@ -1430,15 +1441,38 @@
             renderAll();
         }
 
-        // Search action
-        function handleSearch(val) {
+        // Search action - only updates clear button visibility, does NOT auto-search
+        function handleSearchInput(val) {
+            const clearBtn = document.getElementById('searchClearBtn');
+            if (val.trim().length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+                // Clear search results when input is empty
+                searchQuery = '';
+                renderResources();
+            }
+        }
+
+        // Triggered by search button or Enter key
+        function triggerSearch() {
+            const val = document.getElementById('searchInput').value;
             searchQuery = val;
+            renderResources();
+        }
+
+        // Clear search input
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchClearBtn').classList.add('hidden');
+            searchQuery = '';
             renderResources();
         }
 
         // Set search query based on dynamic tags clicked
         function setTagSearch(tag) {
             document.getElementById('searchInput').value = tag;
+            document.getElementById('searchClearBtn').classList.remove('hidden');
             searchQuery = tag;
             renderResources();
             document.getElementById('searchInput').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1448,6 +1482,7 @@
             activeCategory = '全部';
             searchQuery = '';
             document.getElementById('searchInput').value = '';
+            document.getElementById('searchClearBtn').classList.add('hidden');
             renderAll();
         }
 
@@ -1640,10 +1675,15 @@
 
             hotTags.forEach((tag, index) => {
                 const row = document.createElement('div');
-                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl";
+                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl cursor-grab active:cursor-grabbing";
+                row.setAttribute('draggable', 'true');
+                row.setAttribute('data-index', index);
 
                 row.innerHTML = `
                     <div class="flex-grow flex items-center space-x-2">
+                        <span class="text-gray-600 hover:text-gray-400 cursor-grab shrink-0" title="拖拽排序">
+                            <i data-lucide="grip-vertical" class="h-4 w-4"></i>
+                        </span>
                         <span class="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-lg shrink-0 font-bold"># ${index + 1}</span>
                         <input type="text" value="${tag}" onchange="renameTag(${index}, this.value)" class="flex-grow bg-transparent text-xs text-gray-200 border-b border-transparent hover:border-gray-850 focus:border-amber-555 focus:outline-none px-1 py-0.5">
                     </div>
@@ -1653,6 +1693,33 @@
                         </button>
                     </div>
                 `;
+
+                // Drag events
+                row.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', index);
+                    row.classList.add('opacity-40');
+                });
+                row.addEventListener('dragend', () => row.classList.remove('opacity-40'));
+                row.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    row.classList.add('border-amber-500');
+                });
+                row.addEventListener('dragleave', () => row.classList.remove('border-amber-500'));
+                row.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    row.classList.remove('border-amber-500');
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = parseInt(row.getAttribute('data-index'));
+                    if (fromIndex !== toIndex) {
+                        const moved = hotTags.splice(fromIndex, 1)[0];
+                        hotTags.splice(toIndex, 0, moved);
+                        saveHotTags();
+                        renderTagManagerList();
+                    }
+                });
+
                 list.appendChild(row);
             });
             lucide.createIcons();
@@ -1733,9 +1800,6 @@
             document.getElementById('modalTitle').innerText = "发布新分享资源";
             document.getElementById('resourceForm').reset();
             
-            const emojis = ["💡", "🛠️", "📘", "⚡", "🎨", "📦", "🌐", "⚙️", "🎬", "💰"];
-            document.getElementById('resEmoji').value = emojis[Math.floor(Math.random() * emojis.length)];
-            
             populateModalCategoryDropdown();
             document.getElementById('resourceModal').classList.remove('hidden');
         }
@@ -1750,7 +1814,6 @@
             
             document.getElementById('resTitle').value = item.title;
             document.getElementById('resCategory').value = item.category || '其他';
-            document.getElementById('resEmoji').value = item.emoji || "📦";
             document.getElementById('resLink').value = item.link;
             document.getElementById('resCode').value = item.code || '';
             document.getElementById('resDesc').value = item.desc || '';
@@ -1776,15 +1839,28 @@
             e.preventDefault();
             const idx = parseInt(document.getElementById('editIndex').value);
             
+            const category = document.getElementById('resCategory').value;
+            
+            // Auto-assign emoji based on category
+            let emoji = '📦';
+            const lowerCat = category.toLowerCase();
+            if (lowerCat.includes('网') || lowerCat.includes('站') || lowerCat.includes('web')) emoji = '🌐';
+            else if (lowerCat.includes('付费') || lowerCat.includes('教程') || lowerCat.includes('课程') || lowerCat.includes('剪辑') || lowerCat.includes('影视')) emoji = '🎬';
+            else if (lowerCat.includes('学') || lowerCat.includes('考') || lowerCat.includes('书')) emoji = '📘';
+            else if (lowerCat.includes('工具') || lowerCat.includes('软件') || lowerCat.includes('应用')) emoji = '🛠️';
+            else if (lowerCat.includes('副业')) emoji = '💰';
+            // Preserve original emoji if editing
+            if (idx >= 0 && resources[idx].emoji) emoji = resources[idx].emoji;
+
             const newResource = {
                 title: document.getElementById('resTitle').value.trim(),
-                category: document.getElementById('resCategory').value,
-                emoji: document.getElementById('resEmoji').value.trim() || '📦',
+                category: category,
+                emoji: emoji,
                 link: document.getElementById('resLink').value.trim(),
                 code: document.getElementById('resCode').value.trim(),
                 desc: document.getElementById('resDesc').value.trim(),
                 tags: document.getElementById('resTags').value.trim(),
-                clicks: idx >= 0 ? (resources[idx].clicks || 0) : 0, // Preserve click counts
+                clicks: idx >= 0 ? (resources[idx].clicks || 0) : 0,
                 date: idx >= 0 ? resources[idx].date : new Date().toISOString().split('T')[0]
             };
 
@@ -1822,10 +1898,15 @@
             categories.forEach((cat, index) => {
                 const count = resources.filter(r => r.category === cat).length;
                 const row = document.createElement('div');
-                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl";
+                row.className = "flex items-center justify-between gap-2 p-2 bg-gray-950 border border-gray-900 rounded-xl cursor-grab active:cursor-grabbing";
+                row.setAttribute('draggable', 'true');
+                row.setAttribute('data-index', index);
 
                 row.innerHTML = `
                     <div class="flex-grow flex items-center space-x-2">
+                        <span class="text-gray-600 hover:text-gray-400 cursor-grab shrink-0" title="拖拽排序">
+                            <i data-lucide="grip-vertical" class="h-4 w-4"></i>
+                        </span>
                         <span class="text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-1 rounded-lg shrink-0 font-bold">${index + 1}</span>
                         <input type="text" value="${cat}" onchange="renameCategory(${index}, this.value)" class="flex-grow bg-transparent text-xs text-gray-200 border-b border-transparent hover:border-gray-850 focus:border-indigo-500 focus:outline-none px-1 py-0.5">
                     </div>
@@ -1836,6 +1917,33 @@
                         </button>
                     </div>
                 `;
+
+                // Drag events
+                row.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', index);
+                    row.classList.add('opacity-40');
+                });
+                row.addEventListener('dragend', () => row.classList.remove('opacity-40'));
+                row.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    row.classList.add('border-indigo-500');
+                });
+                row.addEventListener('dragleave', () => row.classList.remove('border-indigo-500'));
+                row.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    row.classList.remove('border-indigo-500');
+                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIndex = parseInt(row.getAttribute('data-index'));
+                    if (fromIndex !== toIndex) {
+                        const moved = categories.splice(fromIndex, 1)[0];
+                        categories.splice(toIndex, 0, moved);
+                        saveCategories();
+                        renderCategoryManagerList();
+                    }
+                });
+
                 list.appendChild(row);
             });
             lucide.createIcons();
@@ -1955,6 +2063,20 @@
         function clearBulkInput() {
             document.getElementById('bulkInputArea').value = '';
             parsedBulkItems = [];
+            updateBulkPreviewTable();
+        }
+
+        function setBulkSortOrder(order) {
+            bulkSortOrder = order;
+            const ascBtn = document.getElementById('bulkSortAscBtn');
+            const descBtn = document.getElementById('bulkSortDescBtn');
+            if (order === 'asc') {
+                ascBtn.className = "px-2 py-1 text-[10px] font-semibold text-white bg-emerald-600 transition flex items-center gap-1";
+                descBtn.className = "px-2 py-1 text-[10px] font-semibold text-gray-400 hover:text-white transition flex items-center gap-1";
+            } else {
+                descBtn.className = "px-2 py-1 text-[10px] font-semibold text-white bg-emerald-600 transition flex items-center gap-1";
+                ascBtn.className = "px-2 py-1 text-[10px] font-semibold text-gray-400 hover:text-white transition flex items-center gap-1";
+            }
             updateBulkPreviewTable();
         }
 
@@ -2093,16 +2215,20 @@
                 return;
             }
 
-            parsedBulkItems.forEach((item, index) => {
+            // Apply sort order: asc = original order, desc = reversed
+            const displayItems = bulkSortOrder === 'desc' 
+                ? [...parsedBulkItems].map((item, i) => ({ item, origIndex: i })).reverse()
+                : parsedBulkItems.map((item, i) => ({ item, origIndex: i }));
+
+            displayItems.forEach(({ item, origIndex }) => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-gray-900 hover:bg-gray-900/20 text-[11px] transition";
                 
-                // Construct a dynamic option list for categories in the bulk table row
                 const catOptions = categories.map(c => `<option value="${c}" ${item.category === c ? 'selected' : ''}>${c}</option>`).join('');
 
                 tr.innerHTML = `
                     <td class="py-2 px-2 text-center">
-                        <input type="checkbox" ${item.importEnabled ? 'checked' : ''} onchange="toggleBulkItem(${index})" class="rounded border-gray-800 text-indigo-500 focus:ring-indigo-500 bg-gray-950">
+                        <input type="checkbox" ${item.importEnabled ? 'checked' : ''} onchange="toggleBulkItem(${origIndex})" class="rounded border-gray-800 text-indigo-500 focus:ring-indigo-500 bg-gray-950">
                     </td>
                     <td class="py-2 px-2 text-center text-base">${item.emoji}</td>
                     <td class="py-2 px-2">
@@ -2110,7 +2236,7 @@
                         <div class="text-[9px] text-gray-500 truncate max-w-[200px] font-mono" title="${item.link}">${item.link}</div>
                     </td>
                     <td class="py-2 px-2">
-                        <select onchange="updateBulkItemCategory(${index}, this.value)" class="w-full bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-gray-200 text-[11px] focus:outline-none focus:border-indigo-500">
+                        <select onchange="updateBulkItemCategory(${origIndex}, this.value)" class="w-full bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-gray-200 text-[11px] focus:outline-none focus:border-indigo-500">
                             ${catOptions}
                         </select>
                     </td>
