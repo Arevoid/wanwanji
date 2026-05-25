@@ -111,7 +111,7 @@
         }
         /* Animations */
         .fade-in {
-            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeIn 0.15s ease-out forwards;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
@@ -136,7 +136,7 @@
                         <!-- Dynamic Logo Emoji -->
                     </div>
                     <div>
-                        <span id="navSiteName" class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-350">ShareHub</span>
+                        <span id="navSiteName" class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-350">万万集资源</span>
                     </div>
                 </div>
 
@@ -177,12 +177,9 @@
 
     <!-- Hero Section -->
     <header class="relative py-10 md:py-14 text-center max-w-4xl mx-auto px-4 z-10">
-        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-4">
-            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Static Sharing Interface</span>
-        </div>
+
         <h1 class="text-3xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
-            <span id="heroSiteName" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">网盘资源集市</span>
+            <span id="heroSiteName" class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">万万集资源</span>
         </h1>
         <p id="heroSiteDesc" class="text-xs md:text-sm text-gray-400 max-w-xl mx-auto mb-6 font-light">
             支持分类Tab自主增删改，一键复制提取码与直达下载，支持 Excel 复制内容智能批量导入。
@@ -811,10 +808,10 @@
         // 🔒 默认网站配置 (INITIAL_CONFIG)
         // ==========================================
         const INITIAL_CONFIG = {
-            siteName: "ShareHub", 
-            siteDesc: "支持分类Tab自主增删改，一键复制提取码与直达下载，支持 Excel 复制内容智能批量导入。",
+            siteName: "万万集资源", 
+            siteDesc: "一款聚合网盘资源分享论坛，提供阿里云盘、夸克网盘、百度网盘、迅雷网盘、移动云盘、UC网盘和115网盘等等网盘资源分享搜索服务，资源每天不断更新",
             siteEmoji: "⚡",
-            passcode: "admin888", // [极其重要]：公开部署前，请把此处的默认密码修改为您专属的口令！
+            passcode: "admin888",
             enableUrlSecretUnlock: true,
         };
 
@@ -841,70 +838,15 @@
         // 默认初始化资源 (INITIAL_RESOURCES)
         const INITIAL_RESOURCES = [
             {
-                title: "万万集资源论坛 (资源与文档不同)",
-                category: "网站",
-                emoji: "🌐",
-                link: "https://bbs.wanwanji.top/",
-                code: "",
-                desc: "知名极客资源论坛，汇聚各类开发资料与技术资讯，推荐常驻探索。",
-                tags: "网站, 社区, 论坛",
-                clicks: 342,
-                date: "2026-05-24"
-            },
-            {
-                title: "🔥 生财有术第九期 (更新至10月)",
-                category: "付费资源",
-                emoji: "💰",
-                link: "https://qiiolnxwxyz.feishu.cn/docx/T3xidn6qno9M",
-                code: "sc88",
-                desc: "知名副业创客圈干货库，覆盖大量新媒体、流量变现与商业化运作实践细节。",
-                tags: "付费资源, 生财, 飞书",
-                clicks: 1205,
-                date: "2026-05-23"
-            },
-            {
-                title: "🔥 网盘拉新项目SOP",
+                title: "🔥网盘拉新项目SOP",
                 category: "副业教程",
                 emoji: "⚡",
-                link: "https://qiiolnxwxyz.feishu.cn/docx/BxLUdCDJno",
+                link: "https://qiiolnxwxyz.feishu.cn/docx/BxLUdCDJnoObpcx45cCcsa4bnlb?from=from_copylink",
                 code: "",
-                desc: "网盘新用户引流与分成变现的官方实操指导规范手册（SOP），极度推荐新手学习。",
-                tags: "副业教程, 网盘拉新, 飞书",
-                clicks: 894,
-                date: "2026-05-22"
-            },
-            {
-                title: "影视飓风 剪辑全能必修课",
-                category: "剪辑",
-                emoji: "🎬",
-                link: "https://pan.quark.cn/s/191e1164db3a",
-                code: "9988",
-                desc: "高质量视音频剪辑、调色、分镜逻辑基础课。快速跨过非线性剪辑技术门槛。",
-                tags: "剪辑, 教程, 影视飓风",
-                clicks: 651,
-                date: "2026-05-20"
-            },
-            {
-                title: "2025注册会计师CPA",
-                category: "学习",
-                emoji: "📘",
-                link: "https://pan.quark.cn/s/62995f44449b",
-                code: "cpa1",
-                desc: "全国注册会计师专业阶段全套讲义视频。包含会计、财管、税法等核心考点整理。",
-                tags: "学习, CPA, 会计考证",
-                clicks: 219,
-                date: "2026-05-19"
-            },
-            {
-                title: "订阅分享 (UC+迅雷) 持续更新 出海工具",
-                category: "工具",
-                emoji: "🛠️",
-                link: "群内获取",
-                code: "",
-                desc: "全套海外提效与云盘同步下载脚本合集，加群或扫描页面二维码查看最新状态。",
-                tags: "工具, 出海, 订阅",
-                clicks: 148,
-                date: "2026-05-18"
+                desc: "",
+                tags: "",
+                clicks: 0,
+                date: "2026-05-25"
             },
             {
                 title: "【男人性福课堂】铁牛·延时训练+硬度改善",
@@ -912,10 +854,32 @@
                 emoji: "📦",
                 link: "https://pan.quark.cn/s/7317771ae5e3",
                 code: "",
-                desc: "经典健身养生与科学训练课程整合归档。",
-                tags: "其他, 课程, 训练",
-                clicks: 405,
-                date: "2026-05-17"
+                desc: "",
+                tags: "",
+                clicks: 0,
+                date: "2026-05-25"
+            },
+            {
+                title: "AE+Pr高能秘籍课",
+                category: "剪辑",
+                emoji: "🎬",
+                link: "https://pan.quark.cn/s/8c17591606fd",
+                code: "",
+                desc: "",
+                tags: "",
+                clicks: 0,
+                date: "2026-05-25"
+            },
+            {
+                title: "California伪厚涂人物头像设计",
+                category: "其他",
+                emoji: "🎨",
+                link: "https://pan.quark.cn/s/ef00efb36a2a",
+                code: "",
+                desc: "",
+                tags: "",
+                clicks: 0,
+                date: "2026-05-25"
             }
         ];
 
@@ -1023,7 +987,6 @@
             applySiteConfigToDOM();
             updateAdminUi(true); // Suppress welcome toast if session persists
             renderAll();
-            lucide.createIcons();
 
             const categoryTabsEl = document.getElementById('categoryTabs');
             if (categoryTabsEl) {
@@ -1054,6 +1017,7 @@
             renderAnnouncements();
             updateStats();
             populateModalCategoryDropdown();
+            requestAnimationFrame(() => lucide.createIcons());
         }
 
         // Back To Top Scroll handler
@@ -1187,7 +1151,6 @@
 
                 container.appendChild(card);
             });
-            lucide.createIcons();
         }
 
         function dismissAnnouncementCard(btn) {
@@ -1251,7 +1214,6 @@
                 `;
                 container.appendChild(tabBtn);
             });
-            lucide.createIcons();
         }
 
         // Dynamically populate Category dropdown in the single add modal
@@ -1385,9 +1347,7 @@
                         ${item.desc ? `<p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc}</p>` : ''}
                         
                         <!-- Tags -->
-                        <div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">
-                            ${tagChips}
-                        </div>
+                        ${tagChips ? `<div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">${tagChips}</div>` : ''}
                     </div>
 
                     <!-- Footer Options -->
@@ -1404,7 +1364,7 @@
                 `;
                 grid.appendChild(card);
             });
-            lucide.createIcons();
+            requestAnimationFrame(() => lucide.createIcons());
         }
 
         // Render Recommended tags dynamically managed by Admin
@@ -1719,7 +1679,6 @@
 
                 list.appendChild(row);
             });
-            lucide.createIcons();
         }
 
         // Added recommended tags
@@ -1943,7 +1902,6 @@
 
                 list.appendChild(row);
             });
-            lucide.createIcons();
         }
 
         function addNewCategory() {
