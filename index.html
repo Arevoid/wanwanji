@@ -1358,14 +1358,12 @@
                 card.innerHTML = `
                     ${adminActions}
                     <div class="w-full">
-                        <!-- Top Header Row: Logo + Title + Clicks (Align inline) -->
+                        <!-- Top Header Row: Category + Title + Clicks -->
                         <div class="flex items-start justify-between mb-3 w-full relative">
-                            <div class="flex items-start space-x-2.5 overflow-hidden flex-grow mr-2">
-                                <div class="h-9 w-9 shrink-0 rounded-xl bg-gray-950 border border-gray-900 flex items-center justify-center text-lg">
-                                    ${item.emoji || '📦'}
-                                </div>
-                                <div class="overflow-hidden flex-grow">
-                                    <h3 class="font-bold text-gray-100 text-xs sm:text-sm group-hover:text-white transition-colors truncate mt-1.5">${item.title}</h3>
+                            <div class="overflow-hidden flex-grow mr-2">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] text-purple-400 bg-purple-500/5 border border-purple-500/15 px-1.5 py-0.5 rounded-md font-semibold shrink-0 whitespace-nowrap">${item.category}</span>
+                                    <h3 class="font-bold text-gray-100 text-xs sm:text-sm group-hover:text-white transition-colors truncate">${item.title}</h3>
                                 </div>
                             </div>
                             <!-- Right aligned clicks count with Admin absolute-btn avoidance padding -->
@@ -1378,9 +1376,8 @@
                         <!-- Info Description -->
                         <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc || ''}</p>
                         
-                        <!-- Consolidated Category & Tags on ONE SINGLE LINE (Category always in front) -->
+                        <!-- Tags -->
                         <div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">
-                            <span class="text-[9px] text-purple-400 bg-purple-500/5 border border-purple-500/15 px-1.5 py-0.5 rounded-md inline-block font-semibold shrink-0">${item.category}</span>
                             ${tagChips}
                         </div>
                     </div>
