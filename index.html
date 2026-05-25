@@ -343,7 +343,7 @@
             </div>
 
             <!-- Resource Grid / Container -->
-            <div id="resourceGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div id="resourceGrid" class="columns-1 md:columns-2 gap-4">
                 <!-- JS Injects Resources Cards -->
             </div>
 
@@ -1314,8 +1314,7 @@
                 const originalIndex = resources.findIndex(r => r.title === item.title && r.link === item.link);
 
                 const card = document.createElement('div');
-                // FIXED: Changed unrecognized p-4.5 to standard Tailwind p-5 (20px) to unify card inner margins and avoid hugging edges
-                card.className = "bg-darkCard/30 border border-gray-900/80 rounded-2xl p-5 hover:border-gray-800 hover:bg-darkCard/60 transition-all duration-300 relative flex flex-col justify-between group fade-in";
+                card.className = "break-inside-avoid mb-4 bg-darkCard/30 border border-gray-900/80 rounded-2xl p-5 hover:border-gray-800 hover:bg-darkCard/60 transition-all duration-300 relative flex flex-col group fade-in";
 
                 const tagChips = item.tags 
                     ? item.tags.split(',').map(t => `<span onclick="setTagSearch('${t.trim()}')" class="cursor-pointer bg-gray-950/80 hover:bg-gray-900 text-gray-550 hover:text-indigo-400 px-2 py-0.5 rounded text-[10px] border border-gray-900 transition">${t.trim()}</span>`).join(' ')
@@ -1383,7 +1382,7 @@
                         </div>
 
                         <!-- Info Description -->
-                        <p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc || ''}</p>
+                        ${item.desc ? `<p class="text-xs text-gray-400 leading-relaxed mb-3 line-clamp-2 font-light w-full">${item.desc}</p>` : ''}
                         
                         <!-- Tags -->
                         <div class="flex flex-wrap items-center gap-1.5 mb-4 w-full">
@@ -2260,8 +2259,9 @@
                 return;
             }
 
-            // Merge items
-            activeImports.forEach(item => {
+            // Merge items in display order (respect sort)
+            const orderedImports = bulkSortOrder === 'desc' ? [...activeImports].reverse() : activeImports;
+            orderedImports.forEach(item => {
                 const finalObj = { ...item };
                 delete finalObj.importEnabled;
                 resources.unshift(finalObj);
