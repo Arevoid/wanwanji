@@ -391,6 +391,10 @@
                     <label class="block text-[10px] text-gray-400 font-semibold mb-1">主宣传简介 / 描述 *</label>
                     <textarea id="cfgSiteDesc" required rows="3" placeholder="写一句简短但吸引眼球的站点概括..." class="w-full bg-gray-900 border border-gray-808 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"></textarea>
                 </div>
+                <div>
+                    <label class="block text-[10px] text-gray-400 font-semibold mb-1">左侧欢迎栏文字（换行分段）</label>
+                    <textarea id="cfgSiteWelcome" rows="4" placeholder="左侧数据看板下方的欢迎介绍文字，用换行分段..." class="w-full bg-gray-900 border border-gray-808 rounded-xl px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"></textarea>
+                </div>
                 <div class="flex justify-end space-x-2.5 pt-2">
                     <button type="button" onclick="closeModal('siteConfigModal')" class="px-4 py-2 font-semibold rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 transition-all">
                         取消
@@ -811,6 +815,7 @@
             siteName: "万万集资源", 
             siteDesc: "一款聚合网盘资源分享论坛，提供阿里云盘、夸克网盘、百度网盘、迅雷网盘、移动云盘、UC网盘和115网盘等等网盘资源分享搜索服务，资源每天不断更新",
             siteEmoji: "⚡",
+            siteWelcome: "本站为一个纯静态极速资源汇聚索引市集。点击各卡片的下载链接或直接一键复制代码即可免费下载对应资源。\n遇到任何失效链接或反馈建议，欢迎在社群中向站长提出反馈！祝获取愉快！",
             passcode: "admin888",
             enableUrlSecretUnlock: true,
         };
@@ -1505,13 +1510,13 @@
                 adminCommandDashboard.classList.add('hidden');
 
                 // Standard visitor sidebar announcement
+                const welcomeParas = (siteConfig.siteWelcome || '').split('\n').filter(Boolean);
                 quickTips.innerHTML = `
                     <div class="flex items-center gap-1.5 text-gray-400 font-semibold mb-1">
                         <i data-lucide="info" class="h-3.5 w-3.5 text-indigo-400"></i>
                         <span>欢迎来到 ${siteConfig.siteName}</span>
                     </div>
-                    <p class="leading-relaxed">本站为一个纯静态极速资源汇聚索引市集。点击各卡片的下载链接或直接一键复制代码即可免费下载对应资源。</p>
-                    <p class="leading-relaxed">遇到任何失效链接或反馈建议，欢迎在社群中向站长提出反馈！祝获取愉快！</p>
+                    ${welcomeParas.map(p => `<p class="leading-relaxed">${p}</p>`).join('')}
                 `;
             }
             renderAll();
@@ -1526,6 +1531,7 @@
             document.getElementById('cfgSiteEmoji').value = siteConfig.siteEmoji || '⚡';
             document.getElementById('cfgSiteDesc').value = siteConfig.siteDesc;
             document.getElementById('cfgPasscode').value = siteConfig.passcode;
+            document.getElementById('cfgSiteWelcome').value = siteConfig.siteWelcome || '';
             document.getElementById('siteConfigModal').classList.remove('hidden');
         }
 
@@ -1536,11 +1542,13 @@
             const newEmoji = document.getElementById('cfgSiteEmoji').value.trim();
             const newDesc = document.getElementById('cfgSiteDesc').value.trim();
             const newCode = document.getElementById('cfgPasscode').value.trim();
+            const newWelcome = document.getElementById('cfgSiteWelcome').value.trim();
 
             siteConfig.siteName = newName;
             siteConfig.siteEmoji = newEmoji;
             siteConfig.siteDesc = newDesc;
             siteConfig.passcode = newCode;
+            siteConfig.siteWelcome = newWelcome;
 
             localStorage.setItem('SHARE_SITE_CONFIG', JSON.stringify(siteConfig));
             applySiteConfigToDOM();
@@ -1679,6 +1687,7 @@
 
                 list.appendChild(row);
             });
+            lucide.createIcons();
         }
 
         // Added recommended tags
@@ -1902,6 +1911,7 @@
 
                 list.appendChild(row);
             });
+            lucide.createIcons();
         }
 
         function addNewCategory() {
